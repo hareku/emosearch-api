@@ -22,7 +22,7 @@ var router *lmdrouter.Router
 var authRepository repository.AuthRepository
 
 func init() {
-	router = lmdrouter.NewRouter("/")
+	router = lmdrouter.NewRouter("/v1/")
 	router.Route("GET", "/@me", fetchMe)
 
 	firebaseAuth, err := makeFirebaseAuth()

@@ -11,7 +11,7 @@ Globals:
     Timeout: 5
 
 Resources:
-  HelloWorldFunction:
+  EmosearchAPIFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: cmd/emosearch-api
@@ -22,11 +22,11 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /hello
+            Path: /v1/{proxy+}
             Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
-          PARAM1: VALUE
+          FIREBASE_CREDENTIALS_JSON_PATH: ./.credentials/emosearch-e3339-firebase-adminsdk-9uoas-45e90102af.json
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -35,9 +35,9 @@ Outputs:
   HelloWorldAPI:
     Description: "API Gateway endpoint URL for Prod environment for First Function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
+  EmosearchAPIFunction:
     Description: "First Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
+    Value: !GetAtt EmosearchAPIFunction.Arn
+  EmosearchAPIFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+    Value: !GetAtt EmosearchAPIFunctionRole.Arn
