@@ -1,49 +1,23 @@
 {
+    "TableName": "EmoSearchAPI",
     "AttributeDefinitions": [
         {
-            "AttributeName": "ID",
+            "AttributeName": "PK",
             "AttributeType": "S"
         },
         {
-            "AttributeName": "UserID",
-            "AttributeType": "S"
-        },
-        {
-            "AttributeName": "Date",
+            "AttributeName": "SK",
             "AttributeType": "S"
         }
     ],
-    "TableName": "Diaries",
     "KeySchema": [
         {
-            "AttributeName": "ID",
+            "AttributeName": "PK",
             "KeyType": "HASH"
         },
         {
-            "AttributeName": "UserID",
+            "AttributeName": "SK",
             "KeyType": "RANGE"
-        }
-    ],
-    "GlobalSecondaryIndexes": [
-        {
-            "IndexName": "UserID-Date-index",
-            "KeySchema": [
-                {
-                    "AttributeName": "UserID",
-                    "KeyType": "HASH"
-                },
-                {
-                    "AttributeName": "Date",
-                    "KeyType": "RANGE"
-                }
-            ],
-            "Projection": {
-                "ProjectionType": "ALL"
-            },
-            "ProvisionedThroughput": {
-                "ReadCapacityUnits": 5,
-                "WriteCapacityUnits": 5
-            }
         }
     ],
     "ProvisionedThroughput": {
