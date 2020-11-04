@@ -1,9 +1,9 @@
-package ctxval
+package auth
 
 import (
 	"context"
 
-	"github.com/hareku/emosearch-api/pkg/domain"
+	"github.com/hareku/emosearch-api/pkg/domain/model"
 )
 
 type authContextKey string
@@ -11,12 +11,12 @@ type authContextKey string
 const userIDKey = authContextKey("user-id")
 
 // GetUserID returns UserID of the given context.
-func GetUserID(ctx context.Context) (domain.UserID, bool) {
-	s, ok := ctx.Value(userIDKey).(domain.UserID)
+func getUserID(ctx context.Context) (model.UserID, bool) {
+	s, ok := ctx.Value(userIDKey).(model.UserID)
 	return s, ok
 }
 
 // SetUserID returns new context which has UserID for the context value.
-func SetUserID(ctx context.Context, userID domain.UserID) context.Context {
+func setUserID(ctx context.Context, userID model.UserID) context.Context {
 	return context.WithValue(ctx, userIDKey, userID)
 }

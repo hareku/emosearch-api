@@ -1,8 +1,8 @@
 package dynamodb
 
 import (
-	"github.com/hareku/emosearch-api/pkg/domain"
-	"github.com/hareku/emosearch-api/pkg/repository"
+	"github.com/hareku/emosearch-api/pkg/domain/model"
+	"github.com/hareku/emosearch-api/pkg/domain/repository"
 )
 
 type dynamoDBSearchRepository struct{}
@@ -12,10 +12,10 @@ func NewDynamoDBSearchRepository() repository.SearchRepository {
 	return &dynamoDBSearchRepository{}
 }
 
-func (r *dynamoDBSearchRepository) Create(domain.Search) (bool, error) {
+func (r *dynamoDBSearchRepository) Create(model.Search) (bool, error) {
 	return true, nil
 }
 
-func (r *dynamoDBSearchRepository) FindByID(domain.SearchID) (domain.Search, error) {
-	return domain.Search{}, nil
+func (r *dynamoDBSearchRepository) FindByID(model.SearchID) (model.Search, error) {
+	return model.Search{}, nil
 }

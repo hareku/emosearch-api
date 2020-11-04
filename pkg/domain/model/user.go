@@ -1,4 +1,4 @@
-package domain
+package model
 
 // UserID is the identifier of User domain.
 type UserID string

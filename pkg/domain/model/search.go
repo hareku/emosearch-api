@@ -1,4 +1,4 @@
-package domain
+package model
 
 // SearchID is the identifier of Search domain.
 type SearchID string
