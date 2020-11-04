@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	firebase_auth "firebase.google.com/go/auth"
+	"github.com/hareku/emosearch-api/internal/ctxval"
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
 )
@@ -21,7 +22,7 @@ func NewFirebaseAuthenticator(firebaseAuth *firebase_auth.Client) auth.Authentic
 }
 
 func (fa *firebaseAuthenticator) Authenticate(ctx context.Context) (context.Context, error) {
-	authHeader, ok := GetAuthHeader(ctx)
+	authHeader, ok := ctxval.GetAuthHeader(ctx)
 	if !ok {
 		return nil, errors.New("`Authorization` header was not found")
 	}
@@ -36,16 +37,16 @@ func (fa *firebaseAuthenticator) Authenticate(ctx context.Context) (context.Cont
 		return nil, fmt.Errorf("authentication failed: %w", err)
 	}
 
-	return setUserID(ctx, userID), nil
+	return ctxval.SetUserID(ctx, userID), nil
 }
 
 func (fa *firebaseAuthenticator) IsAuthenticated(ctx context.Context) bool {
-	_, ok := getUserID(ctx)
+	_, ok := ctxval.GetUserID(ctx)
 	return ok
 }
 
 func (fa *firebaseAuthenticator) UserID(ctx context.Context) (model.UserID, error) {
-	userID, ok := getUserID(ctx)
+	userID, ok := ctxval.GetUserID(ctx)
 	if !ok {
 		return "", errors.New("context user is not authenticated")
 	}

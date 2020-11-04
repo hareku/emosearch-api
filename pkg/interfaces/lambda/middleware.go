@@ -6,6 +6,7 @@ import (
 
 	"github.com/aquasecurity/lmdrouter"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/hareku/emosearch-api/internal/ctxval"
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 )
 
@@ -28,7 +29,9 @@ func authMiddleware(authenticator auth.Authenticator) lmdrouter.Middleware {
 				})
 			}
 
-			authCtx, err := authenticator.Authenticate(ctx)
+			headerCtx := ctxval.SetAuthHeader(ctx, input.AuthorizationHeader)
+
+			authCtx, err := authenticator.Authenticate(headerCtx)
 			if err != nil {
 				return lmdrouter.HandleError(lmdrouter.HTTPError{
 					Code:    http.StatusUnauthorized,
@@ -40,31 +43,3 @@ func authMiddleware(authenticator auth.Authenticator) lmdrouter.Middleware {
 		}
 	}
 }
-
-// // authMiddleware checks whether the request user is authenticated.
-// func authMiddleware(next lmdrouter.Handler) lmdrouter.Handler {
-// 	return func(ctx context.Context, req events.APIGatewayProxyRequest) (
-// 		res events.APIGatewayProxyResponse,
-// 		err error,
-// 	) {
-// 		var input authInput
-// 		err = lmdrouter.UnmarshalRequest(req, false, &input)
-// 		if err != nil {
-// 			return lmdrouter.HandleError(lmdrouter.HTTPError{
-// 				Code:    http.StatusUnauthorized,
-// 				Message: "credentials is missing",
-// 			})
-// 		}
-
-// 		userID, err := authRepository.Authenticate(ctx, input.AuthorizationHeader)
-// 		if err != nil {
-// 			return lmdrouter.HandleError(lmdrouter.HTTPError{
-// 				Code:    http.StatusUnauthorized,
-// 				Message: "unauthorized",
-// 			})
-// 		}
-
-// 		child := auth.SetUserID(ctx, userID)
-// 		return next(child, req)
-// 	}
-// }
