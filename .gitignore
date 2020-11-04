@@ -1,2 +1,8 @@
-.aws-sam
+# binary
 cmd/emosearch-api/emosearch-api
+
+# sam
+.aws-sam
+
+# env
+.env

@@ -7,7 +7,7 @@ ARG INSTALL_NODE="true"
 ARG NODE_VERSION="lts/*"
 RUN if [ "${INSTALL_NODE}" = "true" ]; then su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
-# [Optional] Uncomment this section to install additional OS packages.
+# Install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends python3-distutils
 
@@ -18,6 +18,10 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
 
 # Install AWS tools
 RUN pip3 install awscli aws-sam-cli
+
+# Install Docker
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends docker.io docker-compose
 
 # [Optional] Uncomment the next line to use go get to install anything else you need
 # RUN go get -x <your-dependency-or-tool>

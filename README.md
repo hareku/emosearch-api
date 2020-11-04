@@ -1,5 +1,11 @@
 # emosearch-api
 
+## Commands
+
+- `aws dynamodb create-table --cli-input-json file://./.config/dynamodb.json --endpoint-url http://host.docker.internal:8000`
+- `aws dynamodb list-tables --endpoint-url http://host.docker.internal:8000`
+- `sam local start-api --port 9000 --docker-network emosearch-api_default --env-vars .config/sam-dev-env.json`
+
 This is a sample template for emosearch-api - Below is a brief explanation of what we have generated for you:
 
 ```bash
@@ -21,13 +27,13 @@ This is a sample template for emosearch-api - Below is a brief explanation of wh
 
 ## Setup process
 
-### Installing dependencies & building the target 
+### Installing dependencies & building the target
 
-In this example we use the built-in `sam build` to automatically download all the dependencies and package our build target.   
-Read more about [SAM Build here](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html) 
+In this example we use the built-in `sam build` to automatically download all the dependencies and package our build target.
+Read more about [SAM Build here](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html)
 
 The `sam build` command is wrapped inside of the `Makefile`. To execute this simply run
- 
+
 ```shell
 make
 ```
