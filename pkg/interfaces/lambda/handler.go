@@ -11,8 +11,8 @@ import (
 )
 
 type handler struct {
-	reg    registry.Registry
-	router *lmdrouter.Router
+	registry registry.Registry
+	router   *lmdrouter.Router
 }
 
 // Handler provides the gate of AWS Lambda.
@@ -21,10 +21,10 @@ type Handler interface {
 }
 
 // NewLambdaHandler returns an instance of LambdaHandler.
-func NewLambdaHandler(reg registry.Registry) Handler {
+func NewLambdaHandler(registry registry.Registry) Handler {
 	h := &handler{
-		reg,
-		lmdrouter.NewRouter("/v1", authMiddleware(reg.NewAuthenticator())),
+		registry,
+		lmdrouter.NewRouter("/v1", authMiddleware(registry.NewAuthenticator())),
 	}
 
 	h.registerRoutes()
@@ -38,12 +38,32 @@ func (h *handler) Start() {
 }
 
 func (h *handler) registerRoutes() {
-	h.router.Route("GET", "/@me", fetchMe)
+	h.router.Route("GET", "/searches", h.fetchSearches())
 }
 
-func fetchMe(ctx context.Context, req events.APIGatewayProxyRequest) (
-	res events.APIGatewayProxyResponse,
-	err error,
-) {
-	return lmdrouter.MarshalResponse(http.StatusOK, nil, "Hello world")
+func returnInternalServerError() (events.APIGatewayProxyResponse, error) {
+	return lmdrouter.HandleError(lmdrouter.HTTPError{
+		Code:    http.StatusInternalServerError,
+		Message: "Internal server error.",
+	})
+}
+
+func (h *handler) fetchSearches() lmdrouter.Handler {
+	return func(ctx context.Context, req events.APIGatewayProxyRequest) (
+		res events.APIGatewayProxyResponse,
+		err error,
+	) {
+		u := h.registry.NewSearchUsecase()
+		userID, err := h.registry.NewAuthenticator().UserID(ctx)
+		if err != nil {
+			return returnInternalServerError()
+		}
+
+		searches, err := u.ListByUserID(userID)
+		if err != nil {
+			return returnInternalServerError()
+		}
+
+		return lmdrouter.MarshalResponse(http.StatusOK, nil, searches)
+	}
 }

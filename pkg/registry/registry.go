@@ -1,20 +1,25 @@
 package registry
 
 import (
+	"github.com/guregu/dynamo"
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
+	"github.com/hareku/emosearch-api/pkg/usecase"
 )
 
 // Registry provides methods to make instances.
 type Registry interface {
-	// NewSearchRepository() repository.SearchRepository
-	NewUserRepository() repository.UserRepository
 	NewAuthenticator() auth.Authenticator
+	NewUserRepository() repository.UserRepository
+	NewSearchRepository() repository.SearchRepository
+	NewSearchUsecase() usecase.SearchUsecase
 }
 
-type registry struct{}
+type registry struct {
+	dynamoDB dynamo.Table
+}
 
 // NewRegistry returns Registry.
-func NewRegistry() Registry {
-	return &registry{}
+func NewRegistry(dynamoDB dynamo.Table) Registry {
+	return &registry{dynamoDB}
 }

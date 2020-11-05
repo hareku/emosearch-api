@@ -10,6 +10,7 @@ require (
 	github.com/aquasecurity/lmdrouter v0.3.0
 	github.com/aws/aws-lambda-go v1.15.0
 	github.com/aws/aws-sdk-go v1.35.21
+	github.com/guregu/dynamo v1.10.0
 	github.com/urfave/cli v1.22.1 // indirect
 	google.golang.org/api v0.34.0
 )

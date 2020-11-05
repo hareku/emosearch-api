@@ -8,3 +8,7 @@ import (
 func (r *registry) NewUserRepository() repository.UserRepository {
 	return dynamodb.NewDynamoDatabaseUserRepository()
 }
+
+func (r *registry) NewSearchRepository() repository.SearchRepository {
+	return dynamodb.NewDynamoDBSearchRepository(r.dynamoDB)
+}
