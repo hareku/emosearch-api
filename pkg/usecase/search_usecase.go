@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hareku/emosearch-api/pkg/domain/model"
@@ -9,7 +10,7 @@ import (
 
 // SearchUsecase provides usecases of Search domain.
 type SearchUsecase interface {
-	ListByUserID(userID model.UserID) ([]model.Search, error)
+	ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error)
 }
 
 type searchUsecase struct {
@@ -21,8 +22,8 @@ func NewSearchUsecase(searchRepository repository.SearchRepository) SearchUsecas
 	return &searchUsecase{searchRepository}
 }
 
-func (u *searchUsecase) ListByUserID(userID model.UserID) ([]model.Search, error) {
-	searches, err := u.searchRepository.ListByUserID(userID)
+func (u *searchUsecase) ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error) {
+	searches, err := u.searchRepository.ListByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("cloudn't get searches: %w", err)
 	}

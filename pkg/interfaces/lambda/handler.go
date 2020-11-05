@@ -59,7 +59,7 @@ func (h *handler) fetchSearches() lmdrouter.Handler {
 			return returnInternalServerError()
 		}
 
-		searches, err := u.ListByUserID(userID)
+		searches, err := u.ListByUserID(ctx, userID)
 		if err != nil {
 			return returnInternalServerError()
 		}

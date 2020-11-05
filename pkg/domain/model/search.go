@@ -5,9 +5,10 @@ type SearchID string
 
 // Search is the structure of a searching configuration.
 type Search struct {
-	ID        SearchID
-	Query     string
+	UserID    string
+	SearchID  string
 	Title     string
+	Query     string
 	CreatedAt string
 	UpdatedAt string
 }
