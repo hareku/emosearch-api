@@ -3,17 +3,22 @@ package registry
 import (
 	"context"
 	"fmt"
-	"os"
 
 	firebase_app "firebase.google.com/go"
 	firebase_auth "firebase.google.com/go/auth"
+	"github.com/hareku/emosearch-api/internal/google"
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	auth_infra "github.com/hareku/emosearch-api/pkg/infrastructure/auth"
 	"google.golang.org/api/option"
 )
 
 func makeFirebaseAuth() (*firebase_auth.Client, error) {
-	opt := option.WithCredentialsFile(os.Getenv("FIREBASE_CREDENTIALS_JSON_PATH"))
+	bytes, err := google.GetGoogleServiceAccountKey()
+	if err != nil {
+		return nil, fmt.Errorf("google service account key is not found: %w", err)
+	}
+
+	opt := option.WithCredentialsJSON(bytes)
 	var config *firebase_app.Config
 	ctx := context.Background()
 

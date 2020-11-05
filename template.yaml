@@ -26,7 +26,16 @@ Resources:
             Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
-          FIREBASE_CREDENTIALS_JSON_PATH: ./.credentials/emosearch-e3339-firebase-adminsdk-9uoas-45e90102af.json
+          GOOGLE_SERVICE_ACCOUNT_KEY_SMS_ARN: !Ref GoogleServiceAccountKey
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref GoogleServiceAccountKey
+  GoogleServiceAccountKey:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: GoogleServiceAccountKey
+      SecretString:
+        PleaseInputByAdmin
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

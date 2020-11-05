@@ -9,6 +9,7 @@ require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/aquasecurity/lmdrouter v0.3.0
 	github.com/aws/aws-lambda-go v1.15.0
+	github.com/aws/aws-sdk-go v1.35.21
 	github.com/urfave/cli v1.22.1 // indirect
 	google.golang.org/api v0.34.0
 )

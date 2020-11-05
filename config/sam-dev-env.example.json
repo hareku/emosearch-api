@@ -1,5 +1,6 @@
 {
     "DiaryFunction": {
+        "GOOGLE_SERVICE_ACCOUNT_KEY": "xxxxx",
         "AWS_ENDPOINT": "http://dynamodb:8000"
     }
 }

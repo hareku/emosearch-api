@@ -4,7 +4,7 @@
 
 - `aws dynamodb create-table --cli-input-json file://./.config/dynamodb.json --endpoint-url http://host.docker.internal:8000`
 - `aws dynamodb list-tables --endpoint-url http://host.docker.internal:8000`
-- `sam local start-api --port 9000 --docker-network emosearch-api_default --env-vars .config/sam-dev-env.json`
+- `sam local start-api --port 9000 --env-vars config/sam-dev-env.json --docker-network emosearch-api_default`
 
 This is a sample template for emosearch-api - Below is a brief explanation of what we have generated for you:
 
