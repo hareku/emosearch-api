@@ -24,7 +24,7 @@ type Handler interface {
 func NewLambdaHandler(registry registry.Registry) Handler {
 	h := &handler{
 		registry,
-		lmdrouter.NewRouter("/v1", authMiddleware(registry.NewAuthenticator())),
+		lmdrouter.NewRouter("/v1", authMiddleware(registry.NewAuthenticator()), corsMiddleware()),
 	}
 
 	h.registerRoutes()

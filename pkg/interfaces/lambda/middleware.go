@@ -43,3 +43,24 @@ func authMiddleware(authenticator auth.Authenticator) lmdrouter.Middleware {
 		}
 	}
 }
+
+func corsMiddleware() lmdrouter.Middleware {
+	return func(next lmdrouter.Handler) lmdrouter.Handler {
+		return func(ctx context.Context, req events.APIGatewayProxyRequest) (
+			res events.APIGatewayProxyResponse,
+			err error,
+		) {
+			res, err = next(ctx, req)
+
+			if res.Headers == nil {
+				res.Headers = map[string]string{}
+			}
+
+			res.Headers["Access-Control-Allow-Origin"] = "*"
+			res.Headers["Access-Control-Allow-Methods"] = "*"
+			res.Headers["Access-Control-Allow-Headers"] = "*"
+
+			return
+		}
+	}
+}

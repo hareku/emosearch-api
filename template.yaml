@@ -9,6 +9,13 @@ Description: >
 Globals:
   Function:
     Timeout: 5
+  Api:
+    Cors:
+      AllowMethods: "'*'"
+      AllowHeaders: "'*'"
+      AllowOrigin: "'*'"
+      MaxAge: "'600'"
+      AllowCredentials: False
 
 Resources:
   EmosearchAPIFunction:
