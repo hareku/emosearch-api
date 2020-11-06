@@ -56,17 +56,24 @@ func (h *handler) registerUser() lmdrouter.Handler {
 			return lmdrouter.HandleError(err)
 		}
 
-		user := model.User{
-			UserID:                   userID,
-			TwitterAccessToken:       input.TwitterAccessToken,
-			TwitterAccessTokenSecret: input.TwitterAccessTokenSecret,
-		}
-
-		err = u.Create(ctx, &user)
+		user, err := u.FindByID(ctx, userID)
 		if err != nil {
 			return lmdrouter.HandleError(err)
 		}
 
-		return lmdrouter.MarshalResponse(http.StatusCreated, nil, user)
+		if user == nil {
+			user = &model.User{
+				UserID:                   userID,
+				TwitterAccessToken:       input.TwitterAccessToken,
+				TwitterAccessTokenSecret: input.TwitterAccessTokenSecret,
+			}
+
+			err = u.Create(ctx, user)
+			if err != nil {
+				return lmdrouter.HandleError(err)
+			}
+		}
+
+		return lmdrouter.MarshalResponse(http.StatusOK, nil, user)
 	}
 }

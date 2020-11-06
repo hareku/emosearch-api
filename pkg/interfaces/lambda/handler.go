@@ -38,6 +38,7 @@ func (h *handler) Start() {
 
 func (h *handler) registerRoutes() {
 	h.registerSearchRoutes()
+	h.registerUserRoutes()
 }
 
 func returnInternalServerError() (events.APIGatewayProxyResponse, error) {

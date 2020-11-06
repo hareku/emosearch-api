@@ -54,6 +54,10 @@ func (r *dynamoDbUserRepository) FindByID(ctx context.Context, userID model.User
 		Range("SK", dynamo.Equal, fmt.Sprintf("PROFILE#%s", userID)).
 		OneWithContext(ctx, dbUser)
 
+	if err == dynamo.ErrNotFound {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("DynamoDB error: %w", err)
 	}
