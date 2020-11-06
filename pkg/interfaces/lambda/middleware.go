@@ -2,6 +2,7 @@ package lambda
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/aquasecurity/lmdrouter"
@@ -62,5 +63,34 @@ func corsMiddleware() lmdrouter.Middleware {
 
 			return
 		}
+	}
+}
+
+func loggerMiddleware(next lmdrouter.Handler) lmdrouter.Handler {
+	return func(ctx context.Context, req events.APIGatewayProxyRequest) (
+		res events.APIGatewayProxyResponse,
+		err error,
+	) {
+		// [LEVEL] [METHOD PATH] [CODE] EXTRA
+		format := "[%s] [%s %s] [%d] %s"
+		level := "INF"
+		var code int
+		var extra string
+
+		res, err = next(ctx, req)
+		if err != nil {
+			level = "ERR"
+			code = http.StatusInternalServerError
+			extra = " " + err.Error()
+		} else {
+			code = res.StatusCode
+			if code >= 400 {
+				level = "ERR"
+			}
+		}
+
+		log.Printf(format, level, req.HTTPMethod, req.Path, code, extra)
+
+		return res, err
 	}
 }

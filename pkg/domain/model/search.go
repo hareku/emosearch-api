@@ -1,14 +1,16 @@
 package model
 
+import "time"
+
 // SearchID is the identifier of Search domain.
 type SearchID string
 
 // Search is the structure of a searching configuration.
 type Search struct {
-	UserID    string
-	SearchID  string
+	SearchID  SearchID
+	UserID    UserID
 	Title     string
 	Query     string
-	CreatedAt string
-	UpdatedAt string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
