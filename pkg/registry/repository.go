@@ -6,7 +6,7 @@ import (
 )
 
 func (r *registry) NewUserRepository() repository.UserRepository {
-	return dynamodb.NewDynamoDatabaseUserRepository()
+	return dynamodb.NewDynamoDatabaseUserRepository(r.dynamoDB)
 }
 
 func (r *registry) NewSearchRepository() repository.SearchRepository {

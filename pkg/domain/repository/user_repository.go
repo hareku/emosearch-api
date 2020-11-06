@@ -1,9 +1,13 @@
 package repository
 
-import "github.com/hareku/emosearch-api/pkg/domain/model"
+import (
+	"context"
+
+	"github.com/hareku/emosearch-api/pkg/domain/model"
+)
 
 // UserRepository provides CRUD methods for User domain.
 type UserRepository interface {
-	Store(model.User) (bool, error)
-	FindByID(model.UserID) (model.User, error)
+	Create(ctx context.Context, user *model.User) error
+	FindByID(ctx context.Context, userID model.UserID) (*model.User, error)
 }
