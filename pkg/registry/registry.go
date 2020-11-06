@@ -1,7 +1,6 @@
 package registry
 
 import (
-	"github.com/guregu/dynamo"
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
 	"github.com/hareku/emosearch-api/pkg/usecase"
@@ -15,11 +14,9 @@ type Registry interface {
 	NewSearchUsecase() usecase.SearchUsecase
 }
 
-type registry struct {
-	dynamoDB dynamo.Table
-}
+type registry struct{}
 
 // NewRegistry returns Registry.
-func NewRegistry(dynamoDB dynamo.Table) Registry {
-	return &registry{dynamoDB}
+func NewRegistry() Registry {
+	return &registry{}
 }
