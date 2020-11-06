@@ -49,7 +49,7 @@ func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID mode
 
 	err := r.dynamoDB.
 		Get("PK", fmt.Sprintf("USER#%s", userID)).
-		Filter("BEGINS_WITH(SK, 'SEARCH#')").
+		Range("SK", dynamo.BeginsWith, "SEARCH#").
 		AllWithContext(ctx, &result)
 
 	if err != nil {

@@ -58,12 +58,12 @@ func (h *handler) fetchSearches() lmdrouter.Handler {
 		u := h.registry.NewSearchUsecase()
 		userID, err := h.registry.NewAuthenticator().UserID(ctx)
 		if err != nil {
-			return returnInternalServerError()
+			return lmdrouter.HandleError(err)
 		}
 
 		searches, err := u.ListByUserID(ctx, userID)
 		if err != nil {
-			return returnInternalServerError()
+			return lmdrouter.HandleError(err)
 		}
 
 		return lmdrouter.MarshalResponse(http.StatusOK, nil, searches)
