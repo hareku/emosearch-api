@@ -8,7 +8,7 @@ import (
 	firebase_auth "firebase.google.com/go/auth"
 	"github.com/hareku/emosearch-api/internal/google"
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
-	auth_infra "github.com/hareku/emosearch-api/pkg/infrastructure/auth"
+	firebase_infra "github.com/hareku/emosearch-api/pkg/infrastructure/firebase"
 	"google.golang.org/api/option"
 )
 
@@ -41,5 +41,5 @@ func (r *registry) NewAuthenticator() auth.Authenticator {
 		panic(fmt.Errorf("firebase error: %w", err))
 	}
 
-	return auth_infra.NewFirebaseAuthenticator(firebaseAuth)
+	return firebase_infra.NewFirebaseAuthenticator(firebaseAuth)
 }

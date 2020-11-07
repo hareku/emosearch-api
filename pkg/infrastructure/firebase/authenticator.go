@@ -1,4 +1,4 @@
-package auth
+package firebase
 
 import (
 	"context"
@@ -71,7 +71,7 @@ func (fa *firebaseAuthenticator) checkIDToken(ctx context.Context, idToken strin
 	return model.UserID(token.UID), nil
 }
 
-func (fa *firebaseAuthenticator) UserIDs(ctx context.Context, pageToken string) ([]model.UserID, string, error) {
+func (fa *firebaseAuthenticator) ListUserID(ctx context.Context, pageToken string) ([]model.UserID, string, error) {
 	var ids []model.UserID
 	it := fa.firebaseAuth.Users(ctx, pageToken)
 	nextPageToken := it.PageInfo().Token

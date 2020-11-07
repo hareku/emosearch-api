@@ -3,6 +3,8 @@ package registry
 import (
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
+	"github.com/hareku/emosearch-api/pkg/domain/sentiment"
+	"github.com/hareku/emosearch-api/pkg/domain/twitter"
 	"github.com/hareku/emosearch-api/pkg/usecase"
 )
 
@@ -12,6 +14,8 @@ type Registry interface {
 	NewUserRepository() repository.UserRepository
 	NewSearchRepository() repository.SearchRepository
 	NewSearchUsecase() usecase.SearchUsecase
+	NewTwitterClient() twitter.Client
+	NewSentimentDetector() sentiment.Detector
 }
 
 type registry struct{}

@@ -24,7 +24,7 @@ func (d *comprehendDetector) Detect(ctx context.Context, text string) (*sentimen
 		Text:         &text,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("comprehend error: %w", err)
+		return nil, fmt.Errorf("aws comprehend error: %w", err)
 	}
 
 	score := &sentiment.Score{
