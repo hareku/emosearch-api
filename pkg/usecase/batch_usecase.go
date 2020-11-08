@@ -65,6 +65,10 @@ func (u *batchUsecase) UpdateAllUserSearches(ctx context.Context) error {
 			}
 		}
 
+		if nextToken == "" {
+			return nil
+		}
+
 		ids, nextToken, err = u.authenticator.ListUserID(ctx, nextToken)
 	}
 
