@@ -29,7 +29,7 @@ func NewSearchUsecase(authenticator auth.Authenticator, searchRepository reposit
 func (u *searchUsecase) ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error) {
 	searches, err := u.searchRepository.ListByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("fetching user's searches error: %w", err)
+		return nil, fmt.Errorf("failed to fetch user(id: %s) searches: %w", string(userID), err)
 	}
 
 	return searches, nil
@@ -38,15 +38,10 @@ func (u *searchUsecase) ListByUserID(ctx context.Context, userID model.UserID) (
 func (u *searchUsecase) ListUserSearches(ctx context.Context) ([]*model.Search, error) {
 	userID, err := u.authenticator.UserID(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("fetching user id error: %w", err)
+		return nil, fmt.Errorf("failed to fetch user id: %w", err)
 	}
 
-	searches, err := u.searchRepository.ListByUserID(ctx, userID)
-	if err != nil {
-		return nil, fmt.Errorf("fetching user's searches error: %w", err)
-	}
-
-	return searches, nil
+	return u.ListByUserID(ctx, userID)
 }
 
 // SearchUsecaseCreateInput is the input of SearchUsecase.Create().

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/guregu/dynamo"
 	"github.com/hareku/emosearch-api/internal/uuid"
@@ -46,6 +48,7 @@ func (d *dynamoDBSearch) NewSearchModel() *model.Search {
 
 func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error) {
 	var result []dynamoDBSearch
+	var searches []*model.Search
 
 	err := r.dynamoDB.
 		Get("PK", fmt.Sprintf("USER#%s", userID)).
