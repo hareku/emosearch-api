@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/comprehend"
 	"github.com/hareku/emosearch-api/pkg/domain/sentiment"
-	internal_comprehend "github.com/hareku/emosearch-api/pkg/infrastructure/comprehend"
+	"github.com/hareku/emosearch-api/pkg/infrastructure/mock"
 )
 
 var comprehendClient *comprehend.Comprehend
@@ -22,5 +22,6 @@ func getComprehendClient() *comprehend.Comprehend {
 }
 
 func (r *registry) NewSentimentDetector() sentiment.Detector {
-	return internal_comprehend.NewComprehendDetector(getComprehendClient())
+	// return internal_comprehend.NewComprehendDetector(getComprehendClient())
+	return mock.NewMockDetector()
 }
