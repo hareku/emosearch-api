@@ -52,6 +52,7 @@ Resources:
       Handler: batch-search
       Runtime: go1.x
       Tracing: Active
+      Timeout: 30
       Events:
         CatchGet:
           Type: Schedule

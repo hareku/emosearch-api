@@ -2,6 +2,7 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -25,7 +26,7 @@ type dynamoDBTweet struct {
 
 	TweetID                model.TweetID
 	SearchID               model.SearchID
-	AuthorID               string
+	AuthorID               int64
 	Text                   string
 	SentimentScoreMixed    *float64
 	SentimentScoreNegative *float64
@@ -50,7 +51,7 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 
 	dtweet := dynamoDBTweet{
 		PK: fmt.Sprintf("SEARCH#%s", tweet.SearchID),
-		SK: fmt.Sprintf("TWEET#%s", tweet.TweetID),
+		SK: fmt.Sprintf("TWEET#%d", tweet.TweetID),
 
 		TweetID:                tweet.TweetID,
 		AuthorID:               tweet.AuthorID,
@@ -72,4 +73,22 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 	}
 
 	return nil
+}
+
+func (r *dynamoDBTweetRepository) LatestTweetID(ctx context.Context, searchID model.SearchID) (model.TweetID, error) {
+	var dynamoTweet dynamoDBTweet
+	err := r.dynamoDB.
+		Get("PK", fmt.Sprintf("SEARCH#%s", searchID)).
+		Limit(1).
+		Order(true).
+		OneWithContext(ctx, &dynamoTweet)
+
+	if errors.Is(err, dynamo.ErrNotFound) {
+		return 0, repository.ErrNotFound
+	}
+	if err != nil {
+		return 0, fmt.Errorf("dynamo error: %w", err)
+	}
+
+	return dynamoTweet.TweetID, nil
 }

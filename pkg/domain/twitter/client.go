@@ -21,8 +21,8 @@ type SearchInput struct {
 
 // Tweet represents Twitter Tweet.
 type Tweet struct {
-	TweetID   string
-	UserID    string
+	TweetID   int64
+	AuthorID  int64
 	Text      string
 	CreatedAt time.Time
 }

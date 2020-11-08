@@ -9,4 +9,5 @@ import (
 // TweetRepository provides CRUD methods for Tweet domain.
 type TweetRepository interface {
 	Store(ctx context.Context, tweet *model.Tweet) error
+	LatestTweetID(ctx context.Context, searchID model.SearchID) (model.TweetID, error)
 }

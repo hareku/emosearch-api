@@ -7,13 +7,13 @@ import (
 )
 
 // TweetID is the identifier of Tweet domain.
-type TweetID string
+type TweetID int64
 
 // Tweet is the structure of a tweet.
 type Tweet struct {
 	TweetID        TweetID
 	SearchID       SearchID
-	AuthorID       string
+	AuthorID       int64
 	Text           string
 	SentimentScore *sentiment.Score
 	TweetCreatedAt time.Time

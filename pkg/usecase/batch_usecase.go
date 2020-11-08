@@ -2,7 +2,8 @@ package usecase
 
 import (
 	"context"
-	"strconv"
+	"errors"
+	"fmt"
 
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
@@ -100,31 +101,40 @@ func (u *batchUsecase) collectTweets(ctx context.Context, search *model.Search) 
 		Query:                    search.Query,
 		TwitterAccessToken:       user.TwitterAccessToken,
 		TwitterAccessTokenSecret: user.TwitterAccessTokenSecret,
-		// TODO: set SinceID by stored latest tweet.
 	}
 
+	latestTweetID, err := u.tweetRepository.LatestTweetID(ctx, search.SearchID)
+	if err != nil && !errors.Is(err, repository.ErrNotFound) {
+		return err
+	}
+	input.SinceID = int64(latestTweetID)
+
 	tweets, err := u.twitterClient.Search(ctx, &input)
+	if err != nil {
+		return err
+	}
+	if len(tweets) == 0 {
+		return nil
+	}
+
 	for {
 		if err != nil {
 			return err
 		}
-		if len(tweets) == 0 {
+		// break because Input.MaxID returns results with an ID less than (that is, older than) or equal to the specified ID.
+		if len(tweets) == 1 {
 			break
 		}
 
 		for i := 0; i < len(tweets); i++ {
+			fmt.Printf("tweet: %v\n", tweets[i])
 			err = u.storeTweet(ctx, search, &tweets[i])
 			if err != nil {
 				return err
 			}
 		}
 
-		maxID, err := strconv.ParseInt(tweets[len(tweets)-1].TweetID, 10, 64)
-		if err != nil {
-			return err
-		}
-		input.MaxID = maxID
-
+		input.MaxID = tweets[len(tweets)-1].TweetID
 		tweets, err = u.twitterClient.Search(ctx, &input)
 	}
 
@@ -140,13 +150,16 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 	dtweet := model.Tweet{
 		TweetID:        model.TweetID(tweet.TweetID),
 		SearchID:       search.SearchID,
-		AuthorID:       tweet.UserID,
+		AuthorID:       tweet.AuthorID,
 		Text:           tweet.Text,
 		SentimentScore: score,
 		TweetCreatedAt: tweet.CreatedAt,
 	}
 
 	err = u.tweetRepository.Store(ctx, &dtweet)
+	if err != nil {
+		return fmt.Errorf("tweet storing error: %w", err)
+	}
 
 	return nil
 }
