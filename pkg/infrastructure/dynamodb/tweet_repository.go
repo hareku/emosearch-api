@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/guregu/dynamo"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
@@ -32,9 +31,9 @@ type dynamoDBTweet struct {
 	SentimentScoreNegative *float64
 	SentimentScoreNeutral  *float64
 	SentimentScorePositive *float64
-	TweetCreatedAt         dynamodbattribute.UnixTime
-	CreatedAt              dynamodbattribute.UnixTime
-	UpdatedAt              dynamodbattribute.UnixTime
+	TweetCreatedAt         time.Time
+	CreatedAt              time.Time
+	UpdatedAt              time.Time
 }
 
 func (d *dynamoDBTweet) NewTweetModel() *model.Tweet {
@@ -53,6 +52,7 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 		PK: fmt.Sprintf("SEARCH#%s", tweet.SearchID),
 		SK: fmt.Sprintf("TWEET#%s", tweet.TweetID),
 
+		TweetID:                tweet.TweetID,
 		AuthorID:               tweet.AuthorID,
 		SearchID:               tweet.SearchID,
 		Text:                   tweet.Text,
@@ -60,9 +60,9 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 		SentimentScoreNegative: tweet.SentimentScore.Negative,
 		SentimentScoreNeutral:  tweet.SentimentScore.Negative,
 		SentimentScorePositive: tweet.SentimentScore.Neutral,
-		TweetCreatedAt:         dynamodbattribute.UnixTime(tweet.TweetCreatedAt),
-		CreatedAt:              dynamodbattribute.UnixTime(tweet.CreatedAt),
-		UpdatedAt:              dynamodbattribute.UnixTime(tweet.UpdatedAt),
+		TweetCreatedAt:         tweet.TweetCreatedAt,
+		CreatedAt:              tweet.CreatedAt,
+		UpdatedAt:              tweet.CreatedAt,
 	}
 
 	err := r.dynamoDB.Put(&dtweet).RunWithContext(ctx)
