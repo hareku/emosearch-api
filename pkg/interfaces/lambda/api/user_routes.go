@@ -6,7 +6,7 @@ import (
 
 	"github.com/aquasecurity/lmdrouter"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/hareku/emosearch-api/pkg/domain/model"
+	"github.com/hareku/emosearch-api/pkg/usecase"
 )
 
 func (h *handler) registerUserRoutes() {
@@ -19,13 +19,9 @@ func (h *handler) fetchMe() lmdrouter.Handler {
 		res events.APIGatewayProxyResponse,
 		err error,
 	) {
-		u := h.registry.NewUserRepository()
-		userID, err := h.registry.NewAuthenticator().UserID(ctx)
-		if err != nil {
-			return lmdrouter.HandleError(err)
-		}
+		usecase := h.registry.NewUserUsecase()
 
-		user, err := u.FindByID(ctx, userID)
+		user, err := usecase.FetchAuthUser(ctx)
 		if err != nil {
 			return lmdrouter.HandleError(err)
 		}
@@ -50,30 +46,18 @@ func (h *handler) registerUser() lmdrouter.Handler {
 			return lmdrouter.HandleError(err)
 		}
 
-		u := h.registry.NewUserRepository()
-		userID, err := h.registry.NewAuthenticator().UserID(ctx)
+		u := h.registry.NewUserUsecase()
+		user, err := u.Register(ctx, usecase.UserUsecaseRegisterInput{
+			TwitterAccessToken:       input.TwitterAccessToken,
+			TwitterAccessTokenSecret: input.TwitterAccessTokenSecret,
+		})
+		if err == usecase.ErrUserAlreadyExist {
+			return lmdrouter.MarshalResponse(http.StatusOK, nil, user)
+		}
 		if err != nil {
 			return lmdrouter.HandleError(err)
 		}
 
-		user, err := u.FindByID(ctx, userID)
-		if err != nil {
-			return lmdrouter.HandleError(err)
-		}
-
-		if user == nil {
-			user = &model.User{
-				UserID:                   userID,
-				TwitterAccessToken:       input.TwitterAccessToken,
-				TwitterAccessTokenSecret: input.TwitterAccessTokenSecret,
-			}
-
-			err = u.Create(ctx, user)
-			if err != nil {
-				return lmdrouter.HandleError(err)
-			}
-		}
-
-		return lmdrouter.MarshalResponse(http.StatusOK, nil, user)
+		return lmdrouter.MarshalResponse(http.StatusCreated, nil, user)
 	}
 }

@@ -13,6 +13,7 @@ type Registry interface {
 	NewAuthenticator() auth.Authenticator
 	NewUserRepository() repository.UserRepository
 	NewSearchRepository() repository.SearchRepository
+	NewUserUsecase() usecase.UserUsecase
 	NewSearchUsecase() usecase.SearchUsecase
 	NewTwitterClient() twitter.Client
 	NewSentimentDetector() sentiment.Detector

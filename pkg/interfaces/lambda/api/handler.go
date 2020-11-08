@@ -1,10 +1,7 @@
 package api
 
 import (
-	"net/http"
-
 	"github.com/aquasecurity/lmdrouter"
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/hareku/emosearch-api/pkg/registry"
 )
@@ -39,11 +36,4 @@ func (h *handler) Start() {
 func (h *handler) registerRoutes() {
 	h.registerSearchRoutes()
 	h.registerUserRoutes()
-}
-
-func returnInternalServerError() (events.APIGatewayProxyResponse, error) {
-	return lmdrouter.HandleError(lmdrouter.HTTPError{
-		Code:    http.StatusInternalServerError,
-		Message: "Internal server error.",
-	})
 }
