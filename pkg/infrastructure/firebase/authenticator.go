@@ -10,6 +10,7 @@ import (
 	"github.com/hareku/emosearch-api/internal/ctxval"
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
+	"google.golang.org/api/iterator"
 )
 
 type firebaseAuthenticator struct {
@@ -78,11 +79,11 @@ func (fa *firebaseAuthenticator) ListUserID(ctx context.Context, pageToken strin
 
 	for {
 		user, err := it.Next()
-		if err != nil {
-			return ids, nextPageToken, err
-		}
-		if user == nil {
+		if err == iterator.Done {
 			break
+		}
+		if err != nil {
+			return nil, "", fmt.Errorf("firebase-auth failed to get users: %w", err)
 		}
 		ids = append(ids, model.UserID(user.UID))
 	}
