@@ -7,7 +7,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/guregu/dynamo"
 	"github.com/hareku/emosearch-api/internal/uuid"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
@@ -27,12 +26,12 @@ type dynamoDBSearch struct {
 	PK string
 	SK string
 
-	SearchID  model.SearchID             `dynamo:"SearchID"`
-	UserID    model.UserID               `dynamo:"UserID"`
-	Title     string                     `dynamo:"Title"`
-	Query     string                     `dynamo:"Query"`
-	CreatedAt dynamodbattribute.UnixTime `dynamo:"CreatedAt"`
-	UpdatedAt dynamodbattribute.UnixTime `dynamo:"UpdatedAt"`
+	SearchID  model.SearchID
+	UserID    model.UserID
+	Title     string
+	Query     string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (d *dynamoDBSearch) NewSearchModel() *model.Search {
@@ -47,13 +46,13 @@ func (d *dynamoDBSearch) NewSearchModel() *model.Search {
 }
 
 func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error) {
-	var result []dynamoDBSearch
-	var searches []*model.Search
+	var dynamoResult []dynamoDBSearch
+	searches := []*model.Search{}
 
 	err := r.dynamoDB.
 		Get("PK", fmt.Sprintf("USER#%s", userID)).
 		Range("SK", dynamo.BeginsWith, "SEARCH#").
-		AllWithContext(ctx, &result)
+		AllWithContext(ctx, &dynamoResult)
 
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -68,12 +67,8 @@ func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID mode
 		}
 	}
 
-	for i := 0; i < len(result); i++ {
-		searches = append(searches, result[i].NewSearchModel())
-	}
-
-	if len(searches) == 0 {
-		searches = []*model.Search{}
+	for i := 0; i < len(dynamoResult); i++ {
+		searches = append(searches, dynamoResult[i].NewSearchModel())
 	}
 
 	return searches, nil
@@ -99,8 +94,8 @@ func (r *dynamoDBSearchRepository) Create(ctx context.Context, search *model.Sea
 		SearchID:  search.SearchID,
 		Title:     search.Title,
 		Query:     search.Query,
-		CreatedAt: dynamodbattribute.UnixTime(search.CreatedAt),
-		UpdatedAt: dynamodbattribute.UnixTime(search.UpdatedAt),
+		CreatedAt: search.CreatedAt,
+		UpdatedAt: search.UpdatedAt,
 	}
 
 	err = r.dynamoDB.Put(&dsearch).RunWithContext(ctx)
