@@ -3,9 +3,11 @@ package usecase
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
+	"github.com/hareku/emosearch-api/pkg/domain/repository"
 	"github.com/hareku/emosearch-api/pkg/domain/sentiment"
 	"github.com/hareku/emosearch-api/pkg/domain/twitter"
 )
@@ -19,6 +21,7 @@ type batchUsecase struct {
 	authenticator     auth.Authenticator
 	userUsecase       UserUsecase
 	searchUsecase     SearchUsecase
+	tweetRepository   repository.TweetRepository
 	twitterClient     twitter.Client
 	sentimentDetector sentiment.Detector
 }
@@ -28,6 +31,7 @@ type NewBatchUsecaseInput struct {
 	Authenticator     auth.Authenticator
 	UserUsecase       UserUsecase
 	SearchUsecase     SearchUsecase
+	TweetRepository   repository.TweetRepository
 	TwitterClient     twitter.Client
 	SentimentDetector sentiment.Detector
 }
@@ -38,6 +42,7 @@ func NewBatchUsecase(input *NewBatchUsecaseInput) BatchUsecase {
 		authenticator:     input.Authenticator,
 		userUsecase:       input.UserUsecase,
 		searchUsecase:     input.SearchUsecase,
+		tweetRepository:   input.TweetRepository,
 		twitterClient:     input.TwitterClient,
 		sentimentDetector: input.SentimentDetector,
 	}
@@ -105,7 +110,7 @@ func (u *batchUsecase) collectTweets(ctx context.Context, search *model.Search) 
 		}
 
 		for i := 0; i < len(tweets); i++ {
-			err = u.storeTweet(ctx, &tweets[i])
+			err = u.storeTweet(ctx, search, &tweets[i])
 			if err != nil {
 				return err
 			}
@@ -123,10 +128,27 @@ func (u *batchUsecase) collectTweets(ctx context.Context, search *model.Search) 
 	return nil
 }
 
-func (u *batchUsecase) storeTweet(ctx context.Context, tweet *twitter.Tweet) error {
-	// score, err := u.sentimentDetector.Detect(ctx, tweet.Text)
-	// if err != nil {
-	// 	return err
-	// }
+func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, tweet *twitter.Tweet) error {
+	score, err := u.sentimentDetector.Detect(ctx, tweet.Text)
+	if err != nil {
+		return err
+	}
+
+	tweetCreatedAt, err := time.Parse("Mon Jan 2 15:04:05 -0700 MST 2006", tweet.CreatedAt)
+	if err != nil {
+		return err
+	}
+
+	dtweet := model.Tweet{
+		TweedID:        model.TweetID(tweet.TweetID),
+		SearchID:       search.SearchID,
+		AuthorID:       tweet.UserID,
+		Text:           tweet.Text,
+		SentimentScore: score,
+		TweetCreatedAt: tweetCreatedAt,
+	}
+
+	err = u.tweetRepository.Store(ctx, &dtweet)
+
 	return nil
 }

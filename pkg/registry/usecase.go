@@ -17,6 +17,7 @@ func (r *registry) NewBatchUsecase() usecase.BatchUsecase {
 		Authenticator:     r.NewAuthenticator(),
 		UserUsecase:       r.NewUserUsecase(),
 		SearchUsecase:     r.NewSearchUsecase(),
+		TweetRepository:   r.NewTweetRepository(),
 		TwitterClient:     r.NewTwitterClient(),
 		SentimentDetector: r.NewSentimentDetector(),
 	})
