@@ -106,11 +106,11 @@ func (u *batchUsecase) collectTweets(ctx context.Context, search *model.Search) 
 
 	tweets, err := u.twitterClient.Search(ctx, &input)
 	for {
-		if len(tweets) == 0 {
-			break
-		}
 		if err != nil {
 			return err
+		}
+		if len(tweets) == 0 {
+			break
 		}
 
 		for i := 0; i < len(tweets); i++ {
@@ -144,7 +144,7 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 	}
 
 	dtweet := model.Tweet{
-		TweedID:        model.TweetID(tweet.TweetID),
+		TweetID:        model.TweetID(tweet.TweetID),
 		SearchID:       search.SearchID,
 		AuthorID:       tweet.UserID,
 		Text:           tweet.Text,

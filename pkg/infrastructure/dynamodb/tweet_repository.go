@@ -51,7 +51,7 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 
 	dtweet := dynamoDBTweet{
 		PK: fmt.Sprintf("SEARCH#%s", tweet.SearchID),
-		SK: fmt.Sprintf("TWEET#%s", tweet.TweedID),
+		SK: fmt.Sprintf("TWEET#%s", tweet.TweetID),
 
 		AuthorID:               tweet.AuthorID,
 		SearchID:               tweet.SearchID,

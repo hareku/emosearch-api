@@ -15,7 +15,7 @@ func getComprehendClient() *comprehend.Comprehend {
 		awsConf := &aws.Config{
 			Region: aws.String("ap-northeast-1"),
 		}
-		comprehendClient = comprehend.New(session.New(), awsConf)
+		comprehendClient = comprehend.New(session.Must(session.NewSession()), awsConf)
 	}
 
 	return comprehendClient

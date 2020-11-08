@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/comprehend"
 	"github.com/hareku/emosearch-api/pkg/domain/sentiment"
 )
@@ -18,10 +19,9 @@ func NewComprehendDetector(client *comprehend.Comprehend) sentiment.Detector {
 }
 
 func (d *comprehendDetector) Detect(ctx context.Context, text string) (*sentiment.Score, error) {
-	lang := comprehend.LanguageCodeJa
 	output, err := d.client.DetectSentimentWithContext(ctx, &comprehend.DetectSentimentInput{
-		LanguageCode: &lang,
-		Text:         &text,
+		LanguageCode: aws.String(comprehend.LanguageCodeJa),
+		Text:         aws.String(text),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("aws comprehend error: %w", err)

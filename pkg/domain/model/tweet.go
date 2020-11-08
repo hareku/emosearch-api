@@ -11,7 +11,7 @@ type TweetID string
 
 // Tweet is the structure of a tweet.
 type Tweet struct {
-	TweedID        TweetID
+	TweetID        TweetID
 	SearchID       SearchID
 	AuthorID       string
 	Text           string

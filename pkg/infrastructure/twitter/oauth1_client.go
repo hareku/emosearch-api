@@ -21,9 +21,9 @@ func NewTwitterOauth1Client(config *oauth1.Config) domain_twitter.Client {
 func (c *twitterOauth1Client) Search(ctx context.Context, input *domain_twitter.SearchInput) ([]domain_twitter.Tweet, error) {
 	client := c.makeTwitterClient(ctx, input.TwitterAccessToken, input.TwitterAccessTokenSecret)
 	search, _, err := client.Search.Tweets(&_twitter.SearchTweetParams{
-		Query:   input.Query,
-		MaxID:   input.MaxID,
-		SinceID: input.SinceID,
+		Query: input.Query,
+		// MaxID:   input.MaxID,
+		// SinceID: input.SinceID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("twitter error: %w", err)
@@ -36,7 +36,7 @@ func (c *twitterOauth1Client) Search(ctx context.Context, input *domain_twitter.
 		tweets = append(tweets, domain_twitter.Tweet{
 			TweetID:   statuses[i].IDStr,
 			UserID:    statuses[i].User.IDStr,
-			Text:      statuses[i].FullText,
+			Text:      statuses[i].Text,
 			CreatedAt: statuses[i].CreatedAt,
 		})
 	}
