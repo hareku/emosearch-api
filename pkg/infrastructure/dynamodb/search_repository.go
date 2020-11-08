@@ -53,13 +53,24 @@ func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID mode
 		AllWithContext(ctx, &result)
 
 	if err != nil {
-		return nil, fmt.Errorf("DynamoDB error: %w", err)
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case dynamodb.ErrCodeResourceNotFoundException:
+				return searches, nil
+			default:
+				return nil, fmt.Errorf("DynamoDB error: %w", err)
+			}
+		} else {
+			return nil, fmt.Errorf("DynamoDB error: %w", err)
+		}
 	}
-
-	var searches []*model.Search
 
 	for i := 0; i < len(result); i++ {
 		searches = append(searches, result[i].NewSearchModel())
+	}
+
+	if len(searches) == 0 {
+		searches = []*model.Search{}
 	}
 
 	return searches, nil
