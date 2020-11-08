@@ -17,10 +17,17 @@ func getDynamoTable() *dynamo.Table {
 		awsConf := &aws.Config{
 			Region: aws.String("ap-northeast-1"),
 		}
-		awsEndpoint := os.Getenv("AWS_ENDPOINT")
-		if awsEndpoint != "" {
-			awsConf.Endpoint = aws.String(awsEndpoint)
+
+		region := os.Getenv("AWS_REGION")
+		if region != "" {
+			awsConf.Region = aws.String(region)
 		}
+
+		endpoint := os.Getenv("AWS_ENDPOINT")
+		if endpoint == "" {
+			endpoint = "http://dynamodb:8000"
+		}
+		awsConf.Endpoint = aws.String(endpoint)
 
 		dynamoDB := dynamo.New(session.New(), awsConf)
 		table := dynamoDB.Table("EmoSearchAPI")
