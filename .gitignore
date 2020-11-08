@@ -7,3 +7,6 @@ cmd/emosearch-api/emosearch-api
 # env
 .env
 config/sam-dev-env.json
+
+# dynamodb-local
+.dynamodb

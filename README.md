@@ -2,8 +2,8 @@
 
 ## Commands
 
-- `aws dynamodb create-table --cli-input-json file://./.config/dynamodb.json --endpoint-url http://host.docker.internal:8000`
-- `aws dynamodb list-tables --endpoint-url http://host.docker.internal:8000`
+- `aws dynamodb create-table --cli-input-json file://config/dynamodb.json --endpoint-url http://localhost:8000`
+- `aws dynamodb list-tables --endpoint-url http://localhost:8000`
 - `sam local start-api --port 9000 --env-vars config/sam-dev-env.json --docker-network emosearch-api_default`
 - `sam local invoke "EmosearchBatchSearchFunction" --env-vars config/sam-dev-env.json --docker-network emosearch-api_default`
 
