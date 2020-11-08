@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/guregu/dynamo"
 	"github.com/hareku/emosearch-api/internal/uuid"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
@@ -55,17 +53,11 @@ func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID mode
 		Range("SK", dynamo.BeginsWith, "SEARCH#").
 		AllWithContext(ctx, &dynamoResult)
 
+	if errors.Is(err, dynamo.ErrNotFound) {
+		return searches, repository.ErrNotFound
+	}
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeResourceNotFoundException:
-				return searches, nil
-			default:
-				return nil, fmt.Errorf("DynamoDB error: %w", err)
-			}
-		} else {
-			return nil, fmt.Errorf("DynamoDB error: %w", err)
-		}
+		return nil, fmt.Errorf("dynamo error: %w", err)
 	}
 
 	for i := 0; i < len(dynamoResult); i++ {
