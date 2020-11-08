@@ -18,6 +18,7 @@ var (
 // UserUsecase provides usecases of User domain.
 type UserUsecase interface {
 	FetchAuthUser(ctx context.Context) (*model.User, error)
+	FindByID(ctx context.Context, userID model.UserID) (*model.User, error)
 	Register(ctx context.Context, input UserUsecaseRegisterInput) (*model.User, error)
 }
 
@@ -43,6 +44,15 @@ func (u *userUsecase) FetchAuthUser(ctx context.Context) (*model.User, error) {
 	user, err := u.userRepository.FindByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user from repository: %w", err)
+	}
+
+	return user, nil
+}
+
+func (u *userUsecase) FindByID(ctx context.Context, userID model.UserID) (*model.User, error) {
+	user, err := u.userRepository.FindByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %w", err)
 	}
 
 	return user, nil
