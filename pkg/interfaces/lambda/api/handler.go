@@ -36,4 +36,5 @@ func (h *handler) Start() {
 func (h *handler) registerRoutes() {
 	h.registerSearchRoutes()
 	h.registerUserRoutes()
+	h.registerTweetRoutes()
 }
