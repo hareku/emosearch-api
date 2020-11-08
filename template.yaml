@@ -9,6 +9,10 @@ Description: >
 Globals:
   Function:
     Timeout: 5
+    Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+      Variables:
+        GOOGLE_SERVICE_ACCOUNT_KEY: ""
+        AWS_ENDPOINT: ""
   Api:
     Cors:
       AllowMethods: "'*'"
@@ -36,10 +40,24 @@ Resources:
           Properties:
             Path: /v1/{proxy+}
             Method: POST
-      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
-        Variables:
-          GOOGLE_SERVICE_ACCOUNT_KEY: ""
-          AWS_ENDPOINT: ""
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref GoogleServiceAccountKey
+  EmosearchBatchSearchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: cmd/batch-search
+      Handler: batch-search
+      Runtime: go1.x
+      Tracing: Active
+      Events:
+        CatchGet:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
+            Name: emosearch-api-batch-search-schedule
+            Description: Scheduling batch search
+            Enabled: True
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref GoogleServiceAccountKey
