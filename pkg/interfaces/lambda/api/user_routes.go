@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/aquasecurity/lmdrouter"
@@ -51,7 +52,7 @@ func (h *handler) registerUser() lmdrouter.Handler {
 			TwitterAccessToken:       input.TwitterAccessToken,
 			TwitterAccessTokenSecret: input.TwitterAccessTokenSecret,
 		})
-		if err == usecase.ErrUserAlreadyExist {
+		if errors.Is(err, usecase.ErrUserAlreadyExist) {
 			return lmdrouter.MarshalResponse(http.StatusOK, nil, user)
 		}
 		if err != nil {
