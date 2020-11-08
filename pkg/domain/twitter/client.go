@@ -2,6 +2,7 @@ package twitter
 
 import (
 	"context"
+	"time"
 )
 
 // Client provides twitter actions.
@@ -23,5 +24,5 @@ type Tweet struct {
 	TweetID   string
 	UserID    string
 	Text      string
-	CreatedAt string
+	CreatedAt time.Time
 }

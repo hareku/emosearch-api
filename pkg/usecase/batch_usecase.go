@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"strconv"
-	"time"
 
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
@@ -138,18 +137,13 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 		return err
 	}
 
-	tweetCreatedAt, err := time.Parse("Mon Jan 2 15:04:05 -0700 MST 2006", tweet.CreatedAt)
-	if err != nil {
-		return err
-	}
-
 	dtweet := model.Tweet{
 		TweetID:        model.TweetID(tweet.TweetID),
 		SearchID:       search.SearchID,
 		AuthorID:       tweet.UserID,
 		Text:           tweet.Text,
 		SentimentScore: score,
-		TweetCreatedAt: tweetCreatedAt,
+		TweetCreatedAt: tweet.CreatedAt,
 	}
 
 	err = u.tweetRepository.Store(ctx, &dtweet)

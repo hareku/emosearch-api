@@ -3,6 +3,7 @@ package twitter
 import (
 	"context"
 	"fmt"
+	"time"
 
 	_twitter "github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
@@ -33,11 +34,15 @@ func (c *twitterOauth1Client) Search(ctx context.Context, input *domain_twitter.
 	statuses := search.Statuses
 
 	for i := 0; i < len(statuses); i++ {
+		createdAt, err := time.Parse("Mon Jan 2 15:04:05 -0700 2006", statuses[i].CreatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("tweet created_at parse error: %w", err)
+		}
 		tweets = append(tweets, domain_twitter.Tweet{
 			TweetID:   statuses[i].IDStr,
 			UserID:    statuses[i].User.IDStr,
 			Text:      statuses[i].Text,
-			CreatedAt: statuses[i].CreatedAt,
+			CreatedAt: createdAt,
 		})
 	}
 
