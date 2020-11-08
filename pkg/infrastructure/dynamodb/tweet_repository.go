@@ -9,6 +9,7 @@ import (
 	"github.com/guregu/dynamo"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
+	"github.com/hareku/emosearch-api/pkg/domain/sentiment"
 )
 
 type dynamoDBTweetRepository struct {
@@ -39,8 +40,19 @@ type dynamoDBTweet struct {
 
 func (d *dynamoDBTweet) NewTweetModel() *model.Tweet {
 	return &model.Tweet{
-		CreatedAt: time.Time(d.CreatedAt),
-		UpdatedAt: time.Time(d.UpdatedAt),
+		TweetID:  d.TweetID,
+		SearchID: d.SearchID,
+		AuthorID: d.AuthorID,
+		Text:     d.Text,
+		SentimentScore: &sentiment.Score{
+			Negative: d.SentimentScoreNegative,
+			Positive: d.SentimentScorePositive,
+			Mixed:    d.SentimentScoreMixed,
+			Neutral:  d.SentimentScoreNeutral,
+		},
+		TweetCreatedAt: d.TweetCreatedAt,
+		CreatedAt:      time.Time(d.CreatedAt),
+		UpdatedAt:      time.Time(d.UpdatedAt),
 	}
 }
 
@@ -73,6 +85,34 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 	}
 
 	return nil
+}
+
+func (r *dynamoDBTweetRepository) List(ctx context.Context, input *repository.TweetRepositoryListInput) ([]model.Tweet, error) {
+	var dTweets []dynamoDBTweet
+
+	q := r.dynamoDB.
+		Get("PK", fmt.Sprintf("SEARCH#%s", input.SearchID)).
+		Limit(input.Limit)
+	if input.UntilID != 0 {
+		q.Range("SK", dynamo.Less, fmt.Sprintf("TWEET#%d", input.UntilID))
+	}
+
+	err := q.AllWithContext(ctx, &dTweets)
+
+	if errors.Is(err, dynamo.ErrNotFound) {
+		return []model.Tweet{}, repository.ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("dynamo error: %w", err)
+	}
+
+	var tweets []model.Tweet
+
+	for i := 0; i < len(dTweets); i++ {
+		tweets = append(tweets, *dTweets[i].NewTweetModel())
+	}
+
+	return tweets, nil
 }
 
 func (r *dynamoDBTweetRepository) LatestTweetID(ctx context.Context, searchID model.SearchID) (model.TweetID, error) {
