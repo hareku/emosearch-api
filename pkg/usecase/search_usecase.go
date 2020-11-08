@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
@@ -13,6 +14,7 @@ import (
 type SearchUsecase interface {
 	ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error)
 	ListUserSearches(ctx context.Context) ([]*model.Search, error)
+	GetUserSearch(ctx context.Context, searchID model.SearchID) (*model.Search, error)
 	Create(ctx context.Context, input *SearchUsecaseCreateInput) (*model.Search, error)
 }
 
@@ -42,6 +44,22 @@ func (u *searchUsecase) ListUserSearches(ctx context.Context) ([]*model.Search, 
 	}
 
 	return u.ListByUserID(ctx, userID)
+}
+
+func (u *searchUsecase) GetUserSearch(ctx context.Context, searchID model.SearchID) (*model.Search, error) {
+	userID, err := u.authenticator.UserID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user id: %w", err)
+	}
+
+	search, err := u.searchRepository.Find(ctx, userID, searchID)
+	if errors.Is(err, repository.ErrNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch search (id: %v): %w", searchID, err)
+	}
+	return search, nil
 }
 
 // SearchUsecaseCreateInput is the input of SearchUsecase.Create().

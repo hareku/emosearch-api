@@ -9,5 +9,6 @@ import (
 // SearchRepository provides CRUD methods for Search domain.
 type SearchRepository interface {
 	ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error)
+	Find(ctx context.Context, userID model.UserID, searchID model.SearchID) (*model.Search, error)
 	Create(ctx context.Context, search *model.Search) error
 }

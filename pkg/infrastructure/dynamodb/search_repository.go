@@ -2,6 +2,7 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -72,6 +73,24 @@ func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID mode
 	}
 
 	return searches, nil
+}
+
+func (r *dynamoDBSearchRepository) Find(ctx context.Context, userID model.UserID, searchID model.SearchID) (*model.Search, error) {
+	var dSearch dynamoDBSearch
+
+	err := r.dynamoDB.
+		Get("PK", fmt.Sprintf("USER#%s", userID)).
+		Range("SK", dynamo.Equal, fmt.Sprintf("SEARCH#%s", searchID)).
+		OneWithContext(ctx, &dSearch)
+
+	if errors.Is(err, dynamo.ErrNotFound) {
+		return nil, repository.ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("dynamo error: %w", err)
+	}
+
+	return dSearch.NewSearchModel(), nil
 }
 
 func (r *dynamoDBSearchRepository) Create(ctx context.Context, search *model.Search) error {
