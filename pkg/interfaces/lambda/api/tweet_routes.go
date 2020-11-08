@@ -11,7 +11,7 @@ import (
 )
 
 func (h *handler) registerTweetRoutes() {
-	h.router.Route("GET", "/searches/:search_id/tweetes", h.fetchTweetes())
+	h.router.Route("GET", "/searches/:search_id/tweets", h.fetchTweetes())
 }
 
 type fetchTweetsInput struct {
@@ -44,7 +44,7 @@ func (h *handler) fetchTweetes() lmdrouter.Handler {
 		}
 
 		r := h.registry.NewTweetRepository()
-		tweetes, err := r.List(ctx, &repository.TweetRepositoryListInput{
+		tweets, err := r.List(ctx, &repository.TweetRepositoryListInput{
 			SearchID: input.SearchID,
 			UntilID:  input.UntilID,
 			Limit:    input.Limit,
@@ -53,6 +53,6 @@ func (h *handler) fetchTweetes() lmdrouter.Handler {
 			return lmdrouter.HandleError(err)
 		}
 
-		return lmdrouter.MarshalResponse(http.StatusOK, nil, tweetes)
+		return lmdrouter.MarshalResponse(http.StatusOK, nil, tweets)
 	}
 }
