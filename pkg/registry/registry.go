@@ -15,6 +15,7 @@ type Registry interface {
 	NewSearchRepository() repository.SearchRepository
 	NewUserUsecase() usecase.UserUsecase
 	NewSearchUsecase() usecase.SearchUsecase
+	NewBatchUsecase() usecase.BatchUsecase
 	NewTwitterClient() twitter.Client
 	NewSentimentDetector() sentiment.Detector
 }

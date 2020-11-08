@@ -11,3 +11,13 @@ func (r *registry) NewUserUsecase() usecase.UserUsecase {
 func (r *registry) NewSearchUsecase() usecase.SearchUsecase {
 	return usecase.NewSearchUsecase(r.NewAuthenticator(), r.NewSearchRepository())
 }
+
+func (r *registry) NewBatchUsecase() usecase.BatchUsecase {
+	return usecase.NewBatchUsecase(&usecase.NewBatchUsecaseInput{
+		Authenticator:     r.NewAuthenticator(),
+		UserUsecase:       r.NewUserUsecase(),
+		SearchUsecase:     r.NewSearchUsecase(),
+		TwitterClient:     r.NewTwitterClient(),
+		SentimentDetector: r.NewSentimentDetector(),
+	})
+}
