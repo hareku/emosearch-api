@@ -20,12 +20,7 @@ func (h *handler) fetchSearches() lmdrouter.Handler {
 		err error,
 	) {
 		u := h.registry.NewSearchUsecase()
-		userID, err := h.registry.NewAuthenticator().UserID(ctx)
-		if err != nil {
-			return lmdrouter.HandleError(err)
-		}
-
-		searches, err := u.ListByUserID(ctx, userID)
+		searches, err := u.ListUserSearches(ctx)
 		if err != nil {
 			return lmdrouter.HandleError(err)
 		}
@@ -51,20 +46,14 @@ func (h *handler) createSearch() lmdrouter.Handler {
 		}
 
 		u := h.registry.NewSearchUsecase()
-		userID, err := h.registry.NewAuthenticator().UserID(ctx)
-		if err != nil {
-			return lmdrouter.HandleError(err)
-		}
-
 		search, err := u.Create(ctx, &usecase.SearchUsecaseCreateInput{
-			UserID: userID,
-			Title:  input.Title,
-			Query:  input.Query,
+			Title: input.Title,
+			Query: input.Query,
 		})
 		if err != nil {
 			return lmdrouter.HandleError(err)
 		}
 
-		return lmdrouter.MarshalResponse(http.StatusOK, nil, search)
+		return lmdrouter.MarshalResponse(http.StatusCreated, nil, search)
 	}
 }

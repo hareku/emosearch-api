@@ -9,5 +9,5 @@ func (r *registry) NewUserUsecase() usecase.UserUsecase {
 }
 
 func (r *registry) NewSearchUsecase() usecase.SearchUsecase {
-	return usecase.NewSearchUsecase(r.NewSearchRepository())
+	return usecase.NewSearchUsecase(r.NewAuthenticator(), r.NewSearchRepository())
 }
