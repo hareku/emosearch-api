@@ -37,3 +37,7 @@ func (r *registry) NewUserRepository() repository.UserRepository {
 func (r *registry) NewSearchRepository() repository.SearchRepository {
 	return dynamodb.NewDynamoDBSearchRepository(*getDynamoTable())
 }
+
+func (r *registry) NewTweetRepository() repository.TweetRepository {
+	return dynamodb.NewDynamoDBTweetRepository(*getDynamoTable())
+}

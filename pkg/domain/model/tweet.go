@@ -13,7 +13,7 @@ type TweetID string
 type Tweet struct {
 	TweedID        TweetID
 	SearchID       SearchID
-	UserID         string
+	AuthorID       string
 	Text           string
 	SentimentScore *sentiment.Score
 	TweetCreatedAt time.Time
