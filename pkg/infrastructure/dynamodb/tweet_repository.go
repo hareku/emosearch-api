@@ -92,6 +92,7 @@ func (r *dynamoDBTweetRepository) List(ctx context.Context, input *repository.Tw
 
 	q := r.dynamoDB.
 		Get("PK", fmt.Sprintf("SEARCH#%s", input.SearchID)).
+		Order(false).
 		Limit(input.Limit)
 	if input.UntilID != 0 {
 		q.Range("SK", dynamo.Less, fmt.Sprintf("TWEET#%d", input.UntilID))
@@ -120,7 +121,7 @@ func (r *dynamoDBTweetRepository) LatestTweetID(ctx context.Context, searchID mo
 	err := r.dynamoDB.
 		Get("PK", fmt.Sprintf("SEARCH#%s", searchID)).
 		Limit(1).
-		Order(true).
+		Order(false).
 		OneWithContext(ctx, &dynamoTweet)
 
 	if errors.Is(err, dynamo.ErrNotFound) {
