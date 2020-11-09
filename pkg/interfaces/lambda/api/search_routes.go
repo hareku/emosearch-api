@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/aquasecurity/lmdrouter"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
+	"github.com/hareku/emosearch-api/pkg/domain/validator"
 	"github.com/hareku/emosearch-api/pkg/usecase"
 )
 
@@ -63,7 +65,6 @@ func (h *handler) fetchSearch() lmdrouter.Handler {
 }
 
 type createSearchInput struct {
-	Title string `json:"title"`
 	Query string `json:"query"`
 }
 
@@ -80,9 +81,12 @@ func (h *handler) createSearch() lmdrouter.Handler {
 
 		u := h.registry.NewSearchUsecase()
 		search, err := u.Create(ctx, &usecase.SearchUsecaseCreateInput{
-			Title: input.Title,
 			Query: input.Query,
 		})
+		var errv validator.ErrValidation
+		if errors.As(err, &errv) {
+			return h.handleValidationErrors(errv)
+		}
 		if err != nil {
 			return lmdrouter.HandleError(err)
 		}

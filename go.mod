@@ -12,6 +12,9 @@ require (
 	github.com/aws/aws-sdk-go v1.35.23
 	github.com/dghubble/go-twitter v0.0.0-20201011215211-4b180d0cc78d
 	github.com/dghubble/oauth1 v0.6.0
+	github.com/go-playground/locales v0.13.0
+	github.com/go-playground/universal-translator v0.17.0
+	github.com/go-playground/validator/v10 v10.4.1
 	github.com/google/uuid v1.1.2
 	github.com/guregu/dynamo v1.10.0
 	github.com/urfave/cli v1.22.1 // indirect

@@ -8,6 +8,7 @@ import (
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
+	"github.com/hareku/emosearch-api/pkg/domain/validator"
 )
 
 // SearchUsecase provides usecases of Search domain.
@@ -20,12 +21,13 @@ type SearchUsecase interface {
 
 type searchUsecase struct {
 	authenticator    auth.Authenticator
+	validator        validator.Validator
 	searchRepository repository.SearchRepository
 }
 
 // NewSearchUsecase creates SearchUsecase.
-func NewSearchUsecase(authenticator auth.Authenticator, searchRepository repository.SearchRepository) SearchUsecase {
-	return &searchUsecase{authenticator, searchRepository}
+func NewSearchUsecase(authenticator auth.Authenticator, validator validator.Validator, searchRepository repository.SearchRepository) SearchUsecase {
+	return &searchUsecase{authenticator, validator, searchRepository}
 }
 
 func (u *searchUsecase) ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error) {
@@ -64,11 +66,15 @@ func (u *searchUsecase) GetUserSearch(ctx context.Context, searchID model.Search
 
 // SearchUsecaseCreateInput is the input of SearchUsecase.Create().
 type SearchUsecaseCreateInput struct {
-	Title string
-	Query string
+	Query string `validate:"required,gte=3,lte=100"`
 }
 
 func (u *searchUsecase) Create(ctx context.Context, input *SearchUsecaseCreateInput) (*model.Search, error) {
+	err := u.validator.StructCtx(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
 	userID, err := u.authenticator.UserID(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("fetching user id error: %w", err)
@@ -76,7 +82,7 @@ func (u *searchUsecase) Create(ctx context.Context, input *SearchUsecaseCreateIn
 
 	search := &model.Search{
 		UserID: userID,
-		Title:  input.Title,
+		Title:  "",
 		Query:  input.Query,
 	}
 

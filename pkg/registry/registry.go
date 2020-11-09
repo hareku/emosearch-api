@@ -5,6 +5,7 @@ import (
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
 	"github.com/hareku/emosearch-api/pkg/domain/sentiment"
 	"github.com/hareku/emosearch-api/pkg/domain/twitter"
+	"github.com/hareku/emosearch-api/pkg/domain/validator"
 	"github.com/hareku/emosearch-api/pkg/usecase"
 )
 
@@ -19,6 +20,7 @@ type Registry interface {
 	NewBatchUsecase() usecase.BatchUsecase
 	NewTwitterClient() twitter.Client
 	NewSentimentDetector() sentiment.Detector
+	NewValidator() validator.Validator
 }
 
 type registry struct{}

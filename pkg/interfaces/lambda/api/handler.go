@@ -1,8 +1,12 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/aquasecurity/lmdrouter"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/hareku/emosearch-api/pkg/domain/validator"
 	"github.com/hareku/emosearch-api/pkg/registry"
 )
 
@@ -37,4 +41,9 @@ func (h *handler) registerRoutes() {
 	h.registerSearchRoutes()
 	h.registerUserRoutes()
 	h.registerTweetRoutes()
+}
+
+func (h *handler) handleValidationErrors(verr validator.ErrValidation) (events.APIGatewayProxyResponse, error) {
+	body := verr.ToMap()
+	return lmdrouter.MarshalResponse(http.StatusUnprocessableEntity, nil, body)
 }

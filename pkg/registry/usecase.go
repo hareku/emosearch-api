@@ -9,7 +9,7 @@ func (r *registry) NewUserUsecase() usecase.UserUsecase {
 }
 
 func (r *registry) NewSearchUsecase() usecase.SearchUsecase {
-	return usecase.NewSearchUsecase(r.NewAuthenticator(), r.NewSearchRepository())
+	return usecase.NewSearchUsecase(r.NewAuthenticator(), r.NewValidator(), r.NewSearchRepository())
 }
 
 func (r *registry) NewBatchUsecase() usecase.BatchUsecase {
