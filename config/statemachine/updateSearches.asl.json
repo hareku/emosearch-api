@@ -1,0 +1,27 @@
+{
+    "Comment": "A state machine that update searches.",
+    "StartAt": "ListSearches",
+    "States": {
+        "ListSearches": {
+            "Type": "Task",
+            "Resource": "${ListSearchesToUpdateFunctionArn}",
+            "Next": "CollectTweetsIterator"
+        },
+        "CollectTweetsIterator": {
+            "Type": "Map",
+            "ItemsPath": "$.searchIDs",
+            "MaxConcurrency": 10,
+            "Iterator": {
+              "StartAt": "CollectTweets",
+              "States": {
+                "CollectTweets": {
+                  "Type": "Task",
+                  "Resource": "${CollectTweetsFunctionArn}",
+                  "End": true
+                }
+              }
+            },
+            "End": true
+        }
+    }
+}

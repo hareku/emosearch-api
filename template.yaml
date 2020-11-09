@@ -24,7 +24,7 @@ Globals:
       AllowCredentials: False
 
 Resources:
-  EmosearchAPIFunction:
+  APIFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: cmd/emosearch-api
@@ -45,25 +45,48 @@ Resources:
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref GoogleServiceAccountKey
-  EmosearchBatchSearchFunction:
+
+  UpdateSearchesBatch:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: config/statemachine/updateSearches.asl.json
+      DefinitionSubstitutions:
+        ListSearchesToUpdateFunctionArn: !GetAtt ListSearchesToUpdateFunction.Arn
+        CollectTweetsFunctionArn: !GetAtt CollectTweetsFunction.Arn
+      Events:
+        Schedule:
+          Type: Schedule # More info about Schedule Event Source: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-statemachine-schedule.html
+          Properties:
+            Description: Schedule to run the update searches state machine
+            Enabled: False
+            Schedule: "rate(15 minutes)"
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ListSearchesToUpdateFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref CollectTweetsFunction
+
+  ListSearchesToUpdateFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: cmd/batch-search
-      Handler: batch-search
+      CodeUri: cmd/list-searches
+      Handler: list-searches
       Runtime: go1.x
       Tracing: Active
-      Timeout: 30
-      Events:
-        CatchGet:
-          Type: Schedule
-          Properties:
-            Schedule: rate(15 minutes)
-            Name: emosearch-api-batch-search-schedule
-            Description: Scheduling batch search
-            Enabled: True
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref GoogleServiceAccountKey
+  CollectTweetsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: cmd/collect-tweets
+      Handler: collect-tweets
+      Runtime: go1.x
+      Tracing: Active
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref GoogleServiceAccountKey
+
   GoogleServiceAccountKey:
     Type: AWS::SecretsManager::Secret
     Properties:
@@ -78,9 +101,9 @@ Outputs:
   HelloWorldAPI:
     Description: "API Gateway endpoint URL for Prod environment for First Function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  EmosearchAPIFunction:
+  APIFunction:
     Description: "First Lambda Function ARN"
-    Value: !GetAtt EmosearchAPIFunction.Arn
-  EmosearchAPIFunctionIamRole:
+    Value: !GetAtt APIFunction.Arn
+  APIFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt EmosearchAPIFunctionRole.Arn
+    Value: !GetAtt APIFunctionRole.Arn
