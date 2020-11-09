@@ -11,7 +11,7 @@
             "AttributeType": "S"
         },
         {
-            "AttributeName": "SearchIndexID",
+            "AttributeName": "SearchIndexPK",
             "AttributeType": "S"
         },
         {
@@ -34,7 +34,7 @@
             "IndexName": "SearchIndex",
             "KeySchema": [
                 {
-                    "AttributeName": "SearchIndexID",
+                    "AttributeName": "SearchIndexPK",
                     "KeyType": "HASH"
                 },
                 {
@@ -43,8 +43,11 @@
                 }
             ],
             "Projection": {
-                "ProjectionType": "KEYS_ONLY"
-            }
+                "INCLUDE": "KEYS_ONLY"
+            },
+            "NonKeyAttributes": [
+                "SearchID"
+            ]
         }
     ]
 }

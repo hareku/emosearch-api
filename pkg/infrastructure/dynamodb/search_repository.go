@@ -25,7 +25,7 @@ type dynamoDBSearch struct {
 	PK string
 	SK string
 
-	SearchIndexID model.SearchID // for global secondery index "SearchIndex"
+	SearchIndexPK string // for global secondery index "SearchIndex"
 	SearchID      model.SearchID
 	UserID        model.UserID
 	Title         string
@@ -44,6 +44,36 @@ func (d *dynamoDBSearch) NewSearchModel() *model.Search {
 		CreatedAt: time.Time(d.CreatedAt),
 		UpdatedAt: time.Time(d.UpdatedAt),
 	}
+}
+
+type dynamoSearchIndexItem struct {
+	SearchIndexPK string
+	LastUpdatedAt time.Time
+	SearchID      model.SearchID
+}
+
+func (r *dynamoDBSearchRepository) List(ctx context.Context, input *repository.SearchRepositoryListInput) ([]model.SearchID, error) {
+	var items []dynamoSearchIndexItem
+
+	err := r.dynamoDB.Get("SearchIndexPK", "SEARCH").
+		Index("SearchIndex").
+		Range("LastUpdatedAt", dynamo.Less, input.UntilLastUpdatedAt).
+		Order(true).
+		Limit(input.Limit).
+		All(&items)
+
+	if errors.Is(err, dynamo.ErrNotFound) {
+		return nil, repository.ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("dynamo error: %w", err)
+	}
+
+	var ids []model.SearchID
+	for _, item := range items {
+		ids = append(ids, item.SearchID)
+	}
+	return ids, nil
 }
 
 func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error) {
@@ -104,7 +134,7 @@ func (r *dynamoDBSearchRepository) Create(ctx context.Context, search *model.Sea
 		SK: fmt.Sprintf("SEARCH#%s", search.SearchID),
 
 		UserID:        search.UserID,
-		SearchIndexID: search.SearchID,
+		SearchIndexPK: "SEARCH",
 		SearchID:      search.SearchID,
 		LastUpdatedAt: createdAt.AddDate(-1, 0, 0),
 		Title:         search.Title,
