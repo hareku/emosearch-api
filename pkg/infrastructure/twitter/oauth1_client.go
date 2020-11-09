@@ -22,10 +22,11 @@ func NewTwitterOauth1Client(config *oauth1.Config) domain_twitter.Client {
 func (c *twitterOauth1Client) Search(ctx context.Context, input *domain_twitter.SearchInput) ([]domain_twitter.Tweet, error) {
 	client := c.makeTwitterClient(ctx, input.TwitterAccessToken, input.TwitterAccessTokenSecret)
 	search, _, err := client.Search.Tweets(&_twitter.SearchTweetParams{
-		Query:   input.Query,
-		MaxID:   input.MaxID,
-		SinceID: input.SinceID,
-		Count:   100,
+		Query:     input.Query,
+		MaxID:     input.MaxID,
+		SinceID:   input.SinceID,
+		TweetMode: "extended",
+		Count:     100,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("twitter error: %w", err)
@@ -42,7 +43,7 @@ func (c *twitterOauth1Client) Search(ctx context.Context, input *domain_twitter.
 		tweets = append(tweets, domain_twitter.Tweet{
 			TweetID:   statuses[i].ID,
 			AuthorID:  statuses[i].User.ID,
-			Text:      statuses[i].Text,
+			Text:      statuses[i].FullText,
 			CreatedAt: createdAt,
 		})
 	}
