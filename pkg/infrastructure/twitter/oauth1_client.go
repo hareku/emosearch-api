@@ -3,6 +3,7 @@ package twitter
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	_twitter "github.com/dghubble/go-twitter/twitter"
@@ -22,7 +23,7 @@ func NewTwitterOauth1Client(config *oauth1.Config) domain_twitter.Client {
 func (c *twitterOauth1Client) Search(ctx context.Context, input *domain_twitter.SearchInput) ([]domain_twitter.Tweet, error) {
 	client := c.makeTwitterClient(ctx, input.TwitterAccessToken, input.TwitterAccessTokenSecret)
 	search, _, err := client.Search.Tweets(&_twitter.SearchTweetParams{
-		Query:     input.Query,
+		Query:     addExcludeRetweetOption(input.Query),
 		MaxID:     input.MaxID,
 		SinceID:   input.SinceID,
 		TweetMode: "extended",
@@ -55,4 +56,12 @@ func (c *twitterOauth1Client) makeTwitterClient(ctx context.Context, accessToken
 	token := oauth1.NewToken(accessToken, accessTokenSecret)
 	httpClient := c.config.Client(ctx, token)
 	return _twitter.NewClient(httpClient)
+}
+
+func addExcludeRetweetOption(query string) string {
+	if !strings.Contains(query, "-filter:retweets") {
+		query += " -filter:retweets"
+	}
+
+	return query
 }
