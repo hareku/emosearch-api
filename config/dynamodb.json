@@ -1,5 +1,6 @@
 {
     "TableName": "EmoSearchAPI",
+    "BillingMode": "PAY_PER_REQUEST",
     "AttributeDefinitions": [
         {
             "AttributeName": "PK",
@@ -8,6 +9,14 @@
         {
             "AttributeName": "SK",
             "AttributeType": "S"
+        },
+        {
+            "AttributeName": "SearchIndexID",
+            "AttributeType": "S"
+        },
+        {
+            "AttributeName": "LastUpdatedAt",
+            "AttributeType": "N"
         }
     ],
     "KeySchema": [
@@ -20,8 +29,22 @@
             "KeyType": "RANGE"
         }
     ],
-    "ProvisionedThroughput": {
-        "ReadCapacityUnits": 2,
-        "WriteCapacityUnits": 2
-    }
+    "GlobalSecondaryIndexes": [
+        {
+            "IndexName": "SearchIndex",
+            "KeySchema": [
+                {
+                    "AttributeName": "SearchIndexID",
+                    "KeyType": "HASH"
+                },
+                {
+                    "AttributeName": "LastUpdatedAt",
+                    "KeyType": "RANGE"
+                }
+            ],
+            "Projection": {
+                "ProjectionType": "KEYS_ONLY"
+            }
+        }
+    ]
 }
