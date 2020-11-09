@@ -1,15 +1,12 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/hareku/emosearch-api/pkg/interfaces/lambda/statemachine"
+	"github.com/hareku/emosearch-api/pkg/registry"
 )
 
 func main() {
-	lambda.Start(handler)
-}
-
-func handler() {
-	fmt.Printf("hello from collect-tweets")
+	registry := registry.NewRegistry()
+	handler := statemachine.NewHandler(registry)
+	handler.StartCollectTweets()
 }

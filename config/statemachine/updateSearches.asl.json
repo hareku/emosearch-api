@@ -9,7 +9,7 @@
         },
         "CollectTweetsIterator": {
             "Type": "Map",
-            "ItemsPath": "$.searchIDs",
+            "ItemsPath": "$.events",
             "MaxConcurrency": 10,
             "Iterator": {
               "StartAt": "CollectTweets",
