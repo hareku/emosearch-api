@@ -43,11 +43,11 @@
                 }
             ],
             "Projection": {
-                "INCLUDE": "KEYS_ONLY"
-            },
-            "NonKeyAttributes": [
-                "SearchID"
-            ]
+                "ProjectionType": "INCLUDE",
+                "NonKeyAttributes": [
+                    "SearchID"
+                ]
+            }
         }
     ]
 }
