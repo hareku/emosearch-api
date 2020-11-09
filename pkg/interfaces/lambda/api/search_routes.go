@@ -65,7 +65,7 @@ func (h *handler) fetchSearch() lmdrouter.Handler {
 }
 
 type createSearchInput struct {
-	Query string `json:"query"`
+	Query string `json:"Query"`
 }
 
 func (h *handler) createSearch() lmdrouter.Handler {

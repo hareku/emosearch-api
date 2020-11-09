@@ -7,6 +7,7 @@ import (
 
 	"github.com/aquasecurity/lmdrouter"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/hareku/emosearch-api/pkg/domain/validator"
 	"github.com/hareku/emosearch-api/pkg/usecase"
 )
 
@@ -32,8 +33,8 @@ func (h *handler) fetchMe() lmdrouter.Handler {
 }
 
 type registerUserInput struct {
-	TwitterAccessToken       string `json:"twitter_access_token"`
-	TwitterAccessTokenSecret string `json:"twitter_access_token_secret"`
+	TwitterAccessToken       string `json:"TwitterAccessToken" validate:"required,gt=1,lte=500"`
+	TwitterAccessTokenSecret string `json:"TwitterAccessTokenSecret" validate:"required,gt=1,lte=500"`
 }
 
 func (h *handler) registerUser() lmdrouter.Handler {
@@ -45,6 +46,12 @@ func (h *handler) registerUser() lmdrouter.Handler {
 		err = lmdrouter.UnmarshalRequest(req, true, &input)
 		if err != nil {
 			return lmdrouter.HandleError(err)
+		}
+
+		v := h.registry.NewValidator()
+		var verr validator.ErrValidation
+		if errors.As(v.StructCtx(ctx, input), &verr) {
+			return h.handleValidationErrors(verr)
 		}
 
 		u := h.registry.NewUserUsecase()
