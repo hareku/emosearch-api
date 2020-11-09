@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/aquasecurity/lmdrouter"
@@ -11,7 +12,7 @@ import (
 )
 
 func (h *handler) registerTweetRoutes() {
-	h.router.Route("GET", "/searches/:search_id/tweets", h.fetchTweetes())
+	h.router.Route("GET", "/searches/:search_id/tweets", h.fetchTweets())
 }
 
 type fetchTweetsInput struct {
@@ -20,21 +21,21 @@ type fetchTweetsInput struct {
 	Limit    int64          `lambda:"query.limit"`
 }
 
-func (h *handler) fetchTweetes() lmdrouter.Handler {
+func (h *handler) fetchTweets() lmdrouter.Handler {
 	return func(ctx context.Context, req events.APIGatewayProxyRequest) (
 		res events.APIGatewayProxyResponse,
 		err error,
 	) {
 		var input fetchTweetsInput
-		err = lmdrouter.UnmarshalRequest(req, true, &input)
+		err = lmdrouter.UnmarshalRequest(req, false, &input)
 		if err != nil {
-			return lmdrouter.HandleError(err)
+			return lmdrouter.HandleError(fmt.Errorf("failed to parse input: %w", err))
 		}
 
 		u := h.registry.NewSearchUsecase()
 		search, err := u.GetUserSearch(ctx, input.SearchID)
 		if err != nil {
-			return lmdrouter.HandleError(err)
+			return lmdrouter.HandleError(fmt.Errorf("failed to fetch user search: %w", err))
 		}
 		if search == nil {
 			return lmdrouter.HandleError(lmdrouter.HTTPError{
@@ -50,7 +51,7 @@ func (h *handler) fetchTweetes() lmdrouter.Handler {
 			Limit:    input.Limit,
 		})
 		if err != nil {
-			return lmdrouter.HandleError(err)
+			return lmdrouter.HandleError(fmt.Errorf("failed to fetch tweets: %w", err))
 		}
 
 		return lmdrouter.MarshalResponse(http.StatusOK, nil, tweets)
