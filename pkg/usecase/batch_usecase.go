@@ -127,7 +127,6 @@ func (u *batchUsecase) collectTweets(ctx context.Context, search *model.Search) 
 		}
 
 		for i := 0; i < len(tweets); i++ {
-			fmt.Printf("tweet: %v\n", tweets[i])
 			err = u.storeTweet(ctx, search, &tweets[i])
 			if err != nil {
 				return err
