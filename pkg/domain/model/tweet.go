@@ -11,9 +11,9 @@ type TweetID int64
 
 // Tweet is the structure of a tweet.
 type Tweet struct {
-	TweetID        TweetID
+	TweetID        TweetID `json:",string"`
 	SearchID       SearchID
-	AuthorID       int64
+	AuthorID       int64 `json:",string"`
 	Text           string
 	SentimentScore *sentiment.Score
 	TweetCreatedAt time.Time
