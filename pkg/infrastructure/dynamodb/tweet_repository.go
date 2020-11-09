@@ -107,7 +107,7 @@ func (r *dynamoDBTweetRepository) List(ctx context.Context, input *repository.Tw
 		return nil, fmt.Errorf("dynamo error: %w", err)
 	}
 
-	var tweets []model.Tweet
+	tweets := []model.Tweet{}
 
 	for i := 0; i < len(dTweets); i++ {
 		tweets = append(tweets, *dTweets[i].NewTweetModel())
