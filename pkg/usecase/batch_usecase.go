@@ -49,6 +49,9 @@ func (u *batchUsecase) CollectTweets(ctx context.Context, searchID model.SearchI
 	if err != nil {
 		return err
 	}
+	if search == nil {
+		return nil
+	}
 
 	user, err := u.userUsecase.FindByID(ctx, search.UserID)
 	if err != nil {
