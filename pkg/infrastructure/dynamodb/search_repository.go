@@ -29,14 +29,7 @@ type dynamoDBSearch struct {
 }
 
 func (d *dynamoDBSearch) NewSearchModel() *model.Search {
-	return &model.Search{
-		SearchID:  d.SearchID,
-		UserID:    d.UserID,
-		Title:     d.Title,
-		Query:     d.Query,
-		CreatedAt: time.Time(d.CreatedAt),
-		UpdatedAt: time.Time(d.UpdatedAt),
-	}
+	return d.Search
 }
 
 func (r *dynamoDBSearchRepository) List(ctx context.Context, input repository.SearchRepositoryListInput) ([]*model.Search, error) {

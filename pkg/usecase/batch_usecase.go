@@ -95,7 +95,10 @@ func (u *batchUsecase) CollectTweets(ctx context.Context, searchID model.SearchI
 		tweets, err = u.twitterClient.Search(ctx, &input)
 	}
 
-	u.searchUsecase.UpdateNextUpdateAt(ctx, search)
+	err = u.searchUsecase.UpdateNextUpdateAt(ctx, search)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
