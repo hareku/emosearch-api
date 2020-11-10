@@ -14,7 +14,6 @@ func (r *registry) NewSearchUsecase() usecase.SearchUsecase {
 
 func (r *registry) NewBatchUsecase() usecase.BatchUsecase {
 	return usecase.NewBatchUsecase(&usecase.NewBatchUsecaseInput{
-		Authenticator:     r.NewAuthenticator(),
 		UserUsecase:       r.NewUserUsecase(),
 		SearchUsecase:     r.NewSearchUsecase(),
 		TweetRepository:   r.NewTweetRepository(),

@@ -25,14 +25,14 @@ type dynamoDBSearch struct {
 	PK string
 	SK string
 
-	SearchIndexPK string // for global secondery index "SearchIndex"
-	SearchID      model.SearchID
-	UserID        model.UserID
-	Title         string
-	Query         string
-	LastUpdatedAt time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	SearchIndexPK      int64
+	SearchID           model.SearchID
+	UserID             model.UserID
+	Title              string
+	Query              string
+	NextSearchUpdateAt time.Time
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }
 
 func (d *dynamoDBSearch) NewSearchModel() *model.Search {
@@ -46,19 +46,13 @@ func (d *dynamoDBSearch) NewSearchModel() *model.Search {
 	}
 }
 
-type dynamoSearchIndexItem struct {
-	SearchIndexPK string
-	LastUpdatedAt time.Time
-	SearchID      model.SearchID
-}
+func (r *dynamoDBSearchRepository) List(ctx context.Context, input repository.SearchRepositoryListInput) ([]*model.Search, error) {
+	var items []dynamoDBSearch
 
-func (r *dynamoDBSearchRepository) List(ctx context.Context, input *repository.SearchRepositoryListInput) ([]model.SearchID, error) {
-	var items []dynamoSearchIndexItem
-
-	err := r.dynamoDB.Get("SearchIndexPK", "SEARCH").
+	err := r.dynamoDB.Get("SearchIndexPK", 1).
 		Index("SearchIndex").
-		Range("LastUpdatedAt", dynamo.Less, input.UntilLastUpdatedAt).
-		Order(true).
+		Range("NextSearchUpdateAt", dynamo.LessOrEqual, time.Now()).
+		Order(false).
 		Limit(input.Limit).
 		All(&items)
 
@@ -69,11 +63,11 @@ func (r *dynamoDBSearchRepository) List(ctx context.Context, input *repository.S
 		return nil, fmt.Errorf("dynamo error: %w", err)
 	}
 
-	var ids []model.SearchID
+	var res []*model.Search
 	for _, item := range items {
-		ids = append(ids, item.SearchID)
+		res = append(res, item.NewSearchModel())
 	}
-	return ids, nil
+	return res, nil
 }
 
 func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error) {
@@ -133,14 +127,14 @@ func (r *dynamoDBSearchRepository) Create(ctx context.Context, search *model.Sea
 		PK: fmt.Sprintf("USER#%s", search.UserID),
 		SK: fmt.Sprintf("SEARCH#%s", search.SearchID),
 
-		UserID:        search.UserID,
-		SearchIndexPK: "SEARCH",
-		SearchID:      search.SearchID,
-		LastUpdatedAt: createdAt.AddDate(-1, 0, 0),
-		Title:         search.Title,
-		Query:         search.Query,
-		CreatedAt:     search.CreatedAt,
-		UpdatedAt:     search.UpdatedAt,
+		UserID:             search.UserID,
+		SearchIndexPK:      1,
+		SearchID:           search.SearchID,
+		NextSearchUpdateAt: createdAt.AddDate(-1, 0, 0),
+		Title:              search.Title,
+		Query:              search.Query,
+		CreatedAt:          search.CreatedAt,
+		UpdatedAt:          search.UpdatedAt,
 	}
 
 	err = r.dynamoDB.Put(&dsearch).RunWithContext(ctx)

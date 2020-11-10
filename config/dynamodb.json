@@ -12,11 +12,11 @@
         },
         {
             "AttributeName": "SearchIndexPK",
-            "AttributeType": "S"
+            "AttributeType": "N"
         },
         {
-            "AttributeName": "LastUpdatedAt",
-            "AttributeType": "N"
+            "AttributeName": "NextSearchUpdateAt",
+            "AttributeType": "S"
         }
     ],
     "KeySchema": [
@@ -38,15 +38,12 @@
                     "KeyType": "HASH"
                 },
                 {
-                    "AttributeName": "LastUpdatedAt",
+                    "AttributeName": "NextSearchUpdateAt",
                     "KeyType": "RANGE"
                 }
             ],
             "Projection": {
-                "ProjectionType": "INCLUDE",
-                "NonKeyAttributes": [
-                    "SearchID"
-                ]
+                "ProjectionType": "ALL"
             }
         }
     ]

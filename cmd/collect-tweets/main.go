@@ -7,6 +7,6 @@ import (
 
 func main() {
 	registry := registry.NewRegistry()
-	handler := statemachine.NewHandler(registry)
+	handler := statemachine.New(registry)
 	handler.StartCollectTweets()
 }

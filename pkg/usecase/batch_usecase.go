@@ -13,7 +13,7 @@ import (
 
 // BatchUsecase provides usecases of Batch domain.
 type BatchUsecase interface {
-	CollectTweets(ctx context.Context, searchID model.SearchID) error
+	CollectTweets(ctx context.Context, searchID model.SearchID, userID model.UserID) error
 }
 
 type batchUsecase struct {
@@ -44,8 +44,11 @@ func NewBatchUsecase(input *NewBatchUsecaseInput) BatchUsecase {
 	}
 }
 
-func (u *batchUsecase) CollectTweets(ctx context.Context, searchID model.SearchID) error {
-	// search, err := u.searchUsecase.
+func (u *batchUsecase) CollectTweets(ctx context.Context, searchID model.SearchID, userID model.UserID) error {
+	search, err := u.searchUsecase.Find(ctx, searchID, userID)
+	if err != nil {
+		return err
+	}
 
 	user, err := u.userUsecase.FindByID(ctx, search.UserID)
 	if err != nil {

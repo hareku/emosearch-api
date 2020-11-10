@@ -3,7 +3,6 @@ package statemachine
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
@@ -21,8 +20,8 @@ type Handler interface {
 	StartCollectTweets()
 }
 
-// NewHandler returns an instance of Handler.
-func NewHandler(registry registry.Registry) Handler {
+// New returns an instance of Handler.
+func New(registry registry.Registry) Handler {
 	return &handler{registry}
 }
 
@@ -38,16 +37,16 @@ type StartListSearchesRes struct {
 // StartListSearchesResEvent is events of StartListSearchesRes.
 type StartListSearchesResEvent struct {
 	SearchID model.SearchID `json:"search_id"`
+	UserID   model.UserID   `json:"user_id"`
 }
 
-func (h *handler) listSearchesHandler(ctx context.Context) (*StartListSearchesRes, error) {
+func (h *handler) listSearchesHandler(ctx context.Context) (StartListSearchesRes, error) {
 	r := h.registry.NewSearchRepository()
-	ids, err := r.List(ctx, &repository.SearchRepositoryListInput{
-		Limit:              100,
-		UntilLastUpdatedAt: time.Now().Add(30 * time.Minute),
+	searches, err := r.List(ctx, repository.SearchRepositoryListInput{
+		Limit: 100,
 	})
 
-	res := &StartListSearchesRes{
+	res := StartListSearchesRes{
 		Events: []StartListSearchesResEvent{},
 	}
 
@@ -55,25 +54,23 @@ func (h *handler) listSearchesHandler(ctx context.Context) (*StartListSearchesRe
 		return res, nil
 	}
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 
-	for _, id := range ids {
-		res.Events = append(res.Events, StartListSearchesResEvent{id})
+	for _, search := range searches {
+		res.Events = append(res.Events, StartListSearchesResEvent{
+			SearchID: search.SearchID,
+			UserID:   search.UserID,
+		})
 	}
 
 	return res, nil
-}
-
-// CollectTweetsEvent is the event of CollectTweets lambda function.
-type CollectTweetsEvent struct {
-	SearchID model.SearchID `json:"search_id"`
 }
 
 func (h *handler) StartCollectTweets() {
 	lambda.Start(h.collectTweetsHandler)
 }
 
-func (h *handler) collectTweetsHandler(ctx context.Context, eve CollectTweetsEvent) error {
-	return nil
+func (h *handler) collectTweetsHandler(ctx context.Context, event StartListSearchesResEvent) error {
+	return h.registry.NewBatchUsecase().CollectTweets(ctx, event.SearchID, event.UserID)
 }

@@ -8,7 +8,6 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 5
     Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
       Variables:
         GOOGLE_SERVICE_ACCOUNT_KEY: ""
@@ -31,6 +30,7 @@ Resources:
       Handler: emosearch-api
       Runtime: go1.x
       Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
+      Timeout: 10
       Events:
         CatchGet:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -73,6 +73,7 @@ Resources:
       Handler: list-searches
       Runtime: go1.x
       Tracing: Active
+      Timeout: 10
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref GoogleServiceAccountKey
@@ -83,6 +84,7 @@ Resources:
       Handler: collect-tweets
       Runtime: go1.x
       Tracing: Active
+      Timeout: 900
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref GoogleServiceAccountKey

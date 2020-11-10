@@ -10,3 +10,6 @@ config/sam-dev-env.json
 
 # dynamodb-local
 .dynamodb
+
+# sample event
+event.json

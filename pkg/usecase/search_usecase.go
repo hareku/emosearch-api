@@ -15,6 +15,7 @@ import (
 type SearchUsecase interface {
 	ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error)
 	ListUserSearches(ctx context.Context) ([]*model.Search, error)
+	Find(ctx context.Context, searchID model.SearchID, userID model.UserID) (*model.Search, error)
 	GetUserSearch(ctx context.Context, searchID model.SearchID) (*model.Search, error)
 	Create(ctx context.Context, input *SearchUsecaseCreateInput) (*model.Search, error)
 }
@@ -54,6 +55,17 @@ func (u *searchUsecase) GetUserSearch(ctx context.Context, searchID model.Search
 		return nil, fmt.Errorf("failed to fetch user id: %w", err)
 	}
 
+	search, err := u.searchRepository.Find(ctx, userID, searchID)
+	if errors.Is(err, repository.ErrNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch search (id: %v): %w", searchID, err)
+	}
+	return search, nil
+}
+
+func (u *searchUsecase) Find(ctx context.Context, searchID model.SearchID, userID model.UserID) (*model.Search, error) {
 	search, err := u.searchRepository.Find(ctx, userID, searchID)
 	if errors.Is(err, repository.ErrNotFound) {
 		return nil, nil
