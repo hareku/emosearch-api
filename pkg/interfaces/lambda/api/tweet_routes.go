@@ -21,6 +21,11 @@ type fetchTweetsInput struct {
 	Limit    int64          `lambda:"query.limit"`
 }
 
+type fetchTweetsRes struct {
+	Tweets  []model.Tweet
+	HasMore bool
+}
+
 func (h *handler) fetchTweets() lmdrouter.Handler {
 	return func(ctx context.Context, req events.APIGatewayProxyRequest) (
 		res events.APIGatewayProxyResponse,
@@ -48,12 +53,21 @@ func (h *handler) fetchTweets() lmdrouter.Handler {
 		tweets, err := r.List(ctx, &repository.TweetRepositoryListInput{
 			SearchID: input.SearchID,
 			UntilID:  input.UntilID,
-			Limit:    input.Limit,
+			Limit:    input.Limit + 1,
 		})
 		if err != nil {
 			return lmdrouter.HandleError(fmt.Errorf("failed to fetch tweets: %w", err))
 		}
 
-		return lmdrouter.MarshalResponse(http.StatusOK, nil, tweets)
+		pagination := fetchTweetsRes{
+			Tweets:  tweets,
+			HasMore: false,
+		}
+		if len(tweets) > int(input.Limit) {
+			tweets = tweets[:len(tweets)-1]
+			pagination.HasMore = true
+		}
+
+		return lmdrouter.MarshalResponse(http.StatusOK, nil, pagination)
 	}
 }
