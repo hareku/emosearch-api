@@ -46,7 +46,7 @@ func (c *twitterOauth1Client) Search(ctx context.Context, input *domain_twitter.
 				ID:              st.User.ID,
 				Name:            st.User.Name,
 				ScreenName:      st.User.ScreenName,
-				ProfileImageURL: st.User.ProfileBackgroundImageURLHttps,
+				ProfileImageURL: st.User.ProfileImageURLHttps,
 			},
 			Text:      st.FullText,
 			CreatedAt: createdAt,
