@@ -109,9 +109,15 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 	}
 
 	dtweet := model.Tweet{
-		TweetID:        model.TweetID(tweet.TweetID),
-		SearchID:       search.SearchID,
-		AuthorID:       tweet.AuthorID,
+		TweetID:  model.TweetID(tweet.TweetID),
+		SearchID: search.SearchID,
+		AuthorID: tweet.AuthorID,
+		User: &model.TwitterUser{
+			ID:              tweet.User.ID,
+			Name:            tweet.User.Name,
+			ScreenName:      tweet.User.ScreenName,
+			ProfileImageURL: tweet.User.ProfileImageURL,
+		},
 		Text:           tweet.Text,
 		SentimentScore: score,
 		TweetCreatedAt: tweet.CreatedAt,

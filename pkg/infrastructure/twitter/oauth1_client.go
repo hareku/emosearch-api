@@ -40,8 +40,14 @@ func (c *twitterOauth1Client) Search(ctx context.Context, input *domain_twitter.
 			return nil, fmt.Errorf("tweet created_at parse error: %w", err)
 		}
 		tweets = append(tweets, domain_twitter.Tweet{
-			TweetID:   st.ID,
-			AuthorID:  st.User.ID,
+			TweetID:  st.ID,
+			AuthorID: st.User.ID,
+			User: &domain_twitter.User{
+				ID:              st.User.ID,
+				Name:            st.User.Name,
+				ScreenName:      st.User.ScreenName,
+				ProfileImageURL: st.User.ProfileBackgroundImageURLHttps,
+			},
 			Text:      st.FullText,
 			CreatedAt: createdAt,
 		})
