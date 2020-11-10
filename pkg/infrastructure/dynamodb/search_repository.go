@@ -22,17 +22,10 @@ func NewDynamoDBSearchRepository(dynamoDB dynamo.Table) repository.SearchReposit
 }
 
 type dynamoDBSearch struct {
-	PK string
-	SK string
-
-	SearchIndexPK      int64
-	SearchID           model.SearchID
-	UserID             model.UserID
-	Title              string
-	Query              string
-	NextSearchUpdateAt time.Time
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	PK            string
+	SK            string
+	SearchIndexPK int64
+	*model.Search
 }
 
 func (d *dynamoDBSearch) NewSearchModel() *model.Search {
@@ -116,25 +109,13 @@ func (r *dynamoDBSearchRepository) Create(ctx context.Context, search *model.Sea
 	if err != nil {
 		return fmt.Errorf("uuid error: %w", err)
 	}
-
 	search.SearchID = model.SearchID(searchID)
 
-	createdAt := time.Now()
-	search.CreatedAt = createdAt
-	search.UpdatedAt = createdAt
-
 	dsearch := dynamoDBSearch{
-		PK: fmt.Sprintf("USER#%s", search.UserID),
-		SK: fmt.Sprintf("SEARCH#%s", search.SearchID),
-
-		UserID:             search.UserID,
-		SearchIndexPK:      1,
-		SearchID:           search.SearchID,
-		NextSearchUpdateAt: createdAt.AddDate(-1, 0, 0),
-		Title:              search.Title,
-		Query:              search.Query,
-		CreatedAt:          search.CreatedAt,
-		UpdatedAt:          search.UpdatedAt,
+		PK:            fmt.Sprintf("USER#%s", search.UserID),
+		SK:            fmt.Sprintf("SEARCH#%s", search.SearchID),
+		SearchIndexPK: 1,
+		Search:        search,
 	}
 
 	err = r.dynamoDB.Put(&dsearch).RunWithContext(ctx)

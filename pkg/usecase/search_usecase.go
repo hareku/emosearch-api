@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hareku/emosearch-api/pkg/domain/auth"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
@@ -93,9 +94,12 @@ func (u *searchUsecase) Create(ctx context.Context, input *SearchUsecaseCreateIn
 	}
 
 	search := &model.Search{
-		UserID: userID,
-		Title:  "",
-		Query:  input.Query,
+		UserID:             userID,
+		Title:              "",
+		Query:              input.Query,
+		NextSearchUpdateAt: time.Now().AddDate(-1, 0, 0),
+		CreatedAt:          time.Now(),
+		UpdatedAt:          time.Now(),
 	}
 
 	err = u.searchRepository.Create(ctx, search)
