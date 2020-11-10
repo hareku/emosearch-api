@@ -126,3 +126,17 @@ func (r *dynamoDBSearchRepository) Create(ctx context.Context, search *model.Sea
 
 	return nil
 }
+
+func (r *dynamoDBSearchRepository) Update(ctx context.Context, search *model.Search) error {
+	err := r.dynamoDB.Update("PK", fmt.Sprintf("USER#%s", search.UserID)).
+		Range("SK", fmt.Sprintf("SEARCH#%s", search.SearchID)).
+		Set("Query", search.Query).
+		Set("NextSearchUpdateAt", search.NextSearchUpdateAt).
+		RunWithContext(ctx)
+
+	if err != nil {
+		return fmt.Errorf("dynamo error: %w", err)
+	}
+
+	return nil
+}

@@ -17,4 +17,5 @@ type SearchRepository interface {
 	ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error)
 	Find(ctx context.Context, userID model.UserID, searchID model.SearchID) (*model.Search, error)
 	Create(ctx context.Context, search *model.Search) error
+	Update(ctx context.Context, search *model.Search) error
 }

@@ -19,6 +19,7 @@ type SearchUsecase interface {
 	Find(ctx context.Context, searchID model.SearchID, userID model.UserID) (*model.Search, error)
 	GetUserSearch(ctx context.Context, searchID model.SearchID) (*model.Search, error)
 	Create(ctx context.Context, input *SearchUsecaseCreateInput) (*model.Search, error)
+	UpdateNextUpdateAt(ctx context.Context, search *model.Search) error
 }
 
 type searchUsecase struct {
@@ -108,4 +109,15 @@ func (u *searchUsecase) Create(ctx context.Context, input *SearchUsecaseCreateIn
 	}
 
 	return search, nil
+}
+
+func (u *searchUsecase) UpdateNextUpdateAt(ctx context.Context, search *model.Search) error {
+	search.NextSearchUpdateAt = time.Now().Add(30 * time.Minute)
+	err := u.searchRepository.Update(ctx, search)
+
+	if err != nil {
+		return fmt.Errorf("failed to update search next updated at: %w", err)
+	}
+
+	return nil
 }
