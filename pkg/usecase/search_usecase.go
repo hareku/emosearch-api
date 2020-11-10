@@ -18,6 +18,7 @@ type SearchUsecase interface {
 	ListUserSearches(ctx context.Context) ([]*model.Search, error)
 	Find(ctx context.Context, searchID model.SearchID, userID model.UserID) (*model.Search, error)
 	GetUserSearch(ctx context.Context, searchID model.SearchID) (*model.Search, error)
+	DeleteUserSearch(ctx context.Context, searchID model.SearchID) error
 	Create(ctx context.Context, input *SearchUsecaseCreateInput) (*model.Search, error)
 	UpdateNextUpdateAt(ctx context.Context, search *model.Search) error
 }
@@ -65,6 +66,27 @@ func (u *searchUsecase) GetUserSearch(ctx context.Context, searchID model.Search
 		return nil, fmt.Errorf("failed to fetch search (id: %v): %w", searchID, err)
 	}
 	return search, nil
+}
+
+func (u *searchUsecase) DeleteUserSearch(ctx context.Context, searchID model.SearchID) error {
+	userID, err := u.authenticator.UserID(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to fetch user id: %w", err)
+	}
+
+	search, err := u.searchRepository.Find(ctx, userID, searchID)
+	if errors.Is(err, repository.ErrNotFound) {
+		return fmt.Errorf("search was not found (id: %v): %w", searchID, err)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to fetch search (id: %v): %w", searchID, err)
+	}
+
+	err = u.searchRepository.Delete(ctx, search)
+	if err != nil {
+		return fmt.Errorf("failed to delete search (id: %v): %w", searchID, err)
+	}
+	return nil
 }
 
 func (u *searchUsecase) Find(ctx context.Context, searchID model.SearchID, userID model.UserID) (*model.Search, error) {

@@ -15,6 +15,7 @@ import (
 func (h *handler) registerSearchRoutes() {
 	h.router.Route("GET", "/searches", h.fetchSearches())
 	h.router.Route("GET", "/searches/:id", h.fetchSearch())
+	h.router.Route("DELETE", "/searches/:id", h.deleteSearch())
 	h.router.Route("POST", "/searches", h.createSearch())
 }
 
@@ -43,7 +44,7 @@ func (h *handler) fetchSearch() lmdrouter.Handler {
 		err error,
 	) {
 		var input fetchSearchInput
-		err = lmdrouter.UnmarshalRequest(req, true, &input)
+		err = lmdrouter.UnmarshalRequest(req, false, &input)
 		if err != nil {
 			return lmdrouter.HandleError(err)
 		}
@@ -61,6 +62,31 @@ func (h *handler) fetchSearch() lmdrouter.Handler {
 		}
 
 		return lmdrouter.MarshalResponse(http.StatusOK, nil, search)
+	}
+}
+
+type deleteSearchInput struct {
+	SearchID model.SearchID `lambda:"path.id"`
+}
+
+func (h *handler) deleteSearch() lmdrouter.Handler {
+	return func(ctx context.Context, req events.APIGatewayProxyRequest) (
+		res events.APIGatewayProxyResponse,
+		err error,
+	) {
+		var input deleteSearchInput
+		err = lmdrouter.UnmarshalRequest(req, false, &input)
+		if err != nil {
+			return lmdrouter.HandleError(err)
+		}
+
+		u := h.registry.NewSearchUsecase()
+		err = u.DeleteUserSearch(ctx, input.SearchID)
+		if err != nil {
+			return lmdrouter.HandleError(err)
+		}
+
+		return lmdrouter.MarshalResponse(http.StatusNoContent, nil, nil)
 	}
 }
 

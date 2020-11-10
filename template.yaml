@@ -42,6 +42,11 @@ Resources:
           Properties:
             Path: /v1/{proxy+}
             Method: POST
+        CatchDelete:
+          Type: Api
+          Properties:
+            Path: /v1/{proxy+}
+            Method: DELETE
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref GoogleServiceAccountKey

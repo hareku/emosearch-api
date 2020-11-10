@@ -133,3 +133,15 @@ func (r *dynamoDBSearchRepository) Update(ctx context.Context, search *model.Sea
 
 	return nil
 }
+
+func (r *dynamoDBSearchRepository) Delete(ctx context.Context, search *model.Search) error {
+	err := r.dynamoDB.Delete("PK", fmt.Sprintf("USER#%s", search.UserID)).
+		Range("SK", fmt.Sprintf("SEARCH#%s", search.SearchID)).
+		RunWithContext(ctx)
+
+	if err != nil {
+		return fmt.Errorf("dynamo error: %w", err)
+	}
+
+	return nil
+}
