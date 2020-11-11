@@ -74,4 +74,6 @@ type Medium struct {
 	End      int
 	URL      string
 	MediaURL string
+	VideoURL string
+	Type     string
 }
