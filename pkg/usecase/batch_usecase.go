@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hareku/emosearch-api/pkg/domain/model"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
@@ -117,10 +118,11 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 			ScreenName:      tweet.User.ScreenName,
 			ProfileImageURL: tweet.User.ProfileImageURL,
 		},
-		Entities:       tweet.Entities,
-		Text:           tweet.Text,
-		SentimentScore: nil,
-		TweetCreatedAt: tweet.CreatedAt,
+		Entities:           tweet.Entities,
+		Text:               tweet.Text,
+		SentimentScore:     nil,
+		ExpirationUnixTime: time.Now().AddDate(0, 0, 14).Unix(),
+		TweetCreatedAt:     tweet.CreatedAt,
 	}
 
 	if shouldDetectScore(tweet) {
@@ -129,6 +131,7 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 			return fmt.Errorf("failed to detect sentiment score of a tweet: %w", err)
 		}
 		dtweet.SentimentScore = score
+		dtweet.ExpirationUnixTime = time.Now().AddDate(0, 3, 0).Unix()
 	}
 
 	err := u.tweetRepository.Store(ctx, &dtweet)

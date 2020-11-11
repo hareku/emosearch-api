@@ -20,14 +20,15 @@ type TwitterUser struct {
 
 // Tweet is the structure of a tweet.
 type Tweet struct {
-	TweetID        TweetID `json:",string"`
-	SearchID       SearchID
-	AuthorID       int64 `json:",string"`
-	User           *TwitterUser
-	Text           string
-	SentimentScore *sentiment.Score  `dynamo:",null"`
-	Entities       *twitter.Entities `dynamo:",null"`
-	TweetCreatedAt time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	TweetID            TweetID `json:",string"`
+	SearchID           SearchID
+	AuthorID           int64 `json:",string"`
+	User               *TwitterUser
+	Text               string
+	SentimentScore     *sentiment.Score  `dynamo:",null"`
+	Entities           *twitter.Entities `dynamo:",null"`
+	ExpirationUnixTime int64             `json:"-"`
+	TweetCreatedAt     time.Time
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }
