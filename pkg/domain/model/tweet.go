@@ -24,7 +24,7 @@ type Tweet struct {
 	AuthorID       int64 `json:",string"`
 	User           *TwitterUser
 	Text           string
-	SentimentScore *sentiment.Score
+	SentimentScore *sentiment.Score `dynamo:",null"`
 	TweetCreatedAt time.Time
 	CreatedAt      time.Time
 	UpdatedAt      time.Time

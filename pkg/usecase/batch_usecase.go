@@ -106,11 +106,6 @@ func (u *batchUsecase) CollectTweets(ctx context.Context, searchID model.SearchI
 }
 
 func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, tweet *twitter.Tweet) error {
-	score, err := u.sentimentDetector.Detect(ctx, tweet.Text)
-	if err != nil {
-		return err
-	}
-
 	dtweet := model.Tweet{
 		TweetID:  model.TweetID(tweet.TweetID),
 		SearchID: search.SearchID,
@@ -122,13 +117,21 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 			ProfileImageURL: tweet.User.ProfileImageURL,
 		},
 		Text:           tweet.Text,
-		SentimentScore: score,
+		SentimentScore: nil,
 		TweetCreatedAt: tweet.CreatedAt,
 	}
 
-	err = u.tweetRepository.Store(ctx, &dtweet)
+	if len(tweet.Text) >= 70 {
+		score, err := u.sentimentDetector.Detect(ctx, tweet.Text)
+		if err != nil {
+			return fmt.Errorf("failed to detect sentiment score of a tweet: %w", err)
+		}
+		dtweet.SentimentScore = score
+	}
+
+	err := u.tweetRepository.Store(ctx, &dtweet)
 	if err != nil {
-		return fmt.Errorf("tweet storing error: %w", err)
+		return fmt.Errorf("failed to store a tweet: %w", err)
 	}
 
 	return nil
