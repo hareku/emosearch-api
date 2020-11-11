@@ -116,6 +116,7 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 			ScreenName:      tweet.User.ScreenName,
 			ProfileImageURL: tweet.User.ProfileImageURL,
 		},
+		Entities:       tweet.Entities,
 		Text:           tweet.Text,
 		SentimentScore: nil,
 		TweetCreatedAt: tweet.CreatedAt,

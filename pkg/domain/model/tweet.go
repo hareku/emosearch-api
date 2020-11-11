@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/hareku/emosearch-api/pkg/domain/sentiment"
+	"github.com/hareku/emosearch-api/pkg/domain/twitter"
 )
 
 // TweetID is the identifier of Tweet domain.
@@ -24,7 +25,8 @@ type Tweet struct {
 	AuthorID       int64 `json:",string"`
 	User           *TwitterUser
 	Text           string
-	SentimentScore *sentiment.Score `dynamo:",null"`
+	SentimentScore *sentiment.Score  `dynamo:",null"`
+	Entities       *twitter.Entities `dynamo:",null"`
 	TweetCreatedAt time.Time
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
