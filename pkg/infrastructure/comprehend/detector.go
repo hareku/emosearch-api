@@ -15,7 +15,7 @@ type comprehendDetector struct {
 
 // NewComprehendDetector creates Detector which implemented by AWS Comprehend.
 func NewComprehendDetector(client *comprehend.Comprehend) sentiment.Detector {
-	return &comprehendDetector{}
+	return &comprehendDetector{client}
 }
 
 func (d *comprehendDetector) Detect(ctx context.Context, text string) (*sentiment.Score, error) {
