@@ -63,8 +63,8 @@ func (h *handler) fetchTweets() lmdrouter.Handler {
 			Tweets:  tweets,
 			HasMore: false,
 		}
-		if len(tweets) > int(input.Limit) {
-			tweets = tweets[:len(tweets)-1]
+		if len(pagination.Tweets) > int(input.Limit) {
+			pagination.Tweets = tweets[:len(tweets)-1]
 			pagination.HasMore = true
 		}
 
