@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/hareku/emosearch-api/pkg/domain/model"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
@@ -139,6 +140,10 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 }
 
 func shouldDetectScore(tweet *twitter.Tweet) bool {
+	if strings.Contains(tweet.Text, "youtu.be") || strings.Contains(tweet.Text, "youtube.com") {
+		return false
+	}
+
 	textLen := len(tweet.Text)
 
 	for _, url := range tweet.Entities.URLs {
@@ -149,6 +154,9 @@ func shouldDetectScore(tweet *twitter.Tweet) bool {
 	}
 	for _, men := range tweet.Entities.Mentions {
 		textLen -= len(men.Tag)
+	}
+	for _, hash := range tweet.Entities.HashTags {
+		textLen -= len(hash.Tag)
 	}
 
 	return textLen >= 160
