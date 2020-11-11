@@ -53,7 +53,6 @@ func (c *twitterOauth1Client) Search(ctx context.Context, input *dtwitter.Search
 			Text:      st.FullText,
 			CreatedAt: createdAt,
 		})
-		fmt.Printf("%v\n", tweets[len(tweets)-1].Entities)
 	}
 
 	return tweets, nil
