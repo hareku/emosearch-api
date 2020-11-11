@@ -143,8 +143,10 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 }
 
 func shouldDetectScore(tweet *twitter.Tweet) bool {
-	if strings.Contains(tweet.Text, "youtu.be") || strings.Contains(tweet.Text, "youtube.com") {
-		return false
+	for _, url := range tweet.Entities.URLs {
+		if strings.Contains(url.ExpandedURL, "youtu.be") || strings.Contains(url.ExpandedURL, "youtube.com") {
+			return false
+		}
 	}
 
 	textLen := len(tweet.Text)
