@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	_twitter "github.com/dghubble/go-twitter/twitter"
+	sdk "github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 	dtwitter "github.com/hareku/emosearch-api/pkg/domain/twitter"
 )
@@ -21,11 +21,11 @@ func NewTwitterOauth1Client(config *oauth1.Config) dtwitter.Client {
 
 func (c *twitterOauth1Client) Search(ctx context.Context, input *dtwitter.SearchInput) ([]dtwitter.Tweet, error) {
 	client := c.makeTwitterClient(ctx, input.TwitterAccessToken, input.TwitterAccessTokenSecret)
-	search, _, err := client.Search.Tweets(&_twitter.SearchTweetParams{
+	search, _, err := client.Search.Tweets(&sdk.SearchTweetParams{
 		Query:           addExcludeRetweetOption(input.Query),
 		MaxID:           input.MaxID,
 		SinceID:         input.SinceID,
-		IncludeEntities: _twitter.Bool(true),
+		IncludeEntities: sdk.Bool(true),
 		TweetMode:       "extended",
 		Count:           100,
 	})
@@ -35,22 +35,22 @@ func (c *twitterOauth1Client) Search(ctx context.Context, input *dtwitter.Search
 
 	tweets := []dtwitter.Tweet{}
 
-	for _, st := range search.Statuses {
-		createdAt, err := st.CreatedAtTime()
+	for _, tweet := range search.Statuses {
+		createdAt, err := tweet.CreatedAtTime()
 		if err != nil {
 			return nil, fmt.Errorf("tweet created_at parse error: %w", err)
 		}
 		tweets = append(tweets, dtwitter.Tweet{
-			TweetID:  st.ID,
-			AuthorID: st.User.ID,
+			TweetID:  tweet.ID,
+			AuthorID: tweet.User.ID,
 			User: &dtwitter.User{
-				ID:              st.User.ID,
-				Name:            st.User.Name,
-				ScreenName:      st.User.ScreenName,
-				ProfileImageURL: st.User.ProfileImageURLHttps,
+				ID:              tweet.User.ID,
+				Name:            tweet.User.Name,
+				ScreenName:      tweet.User.ScreenName,
+				ProfileImageURL: tweet.User.ProfileImageURLHttps,
 			},
-			Entities:  makeEntities(&st),
-			Text:      st.FullText,
+			Entities:  makeEntities(&tweet),
+			Text:      tweet.FullText,
 			CreatedAt: createdAt,
 		})
 	}
@@ -58,7 +58,7 @@ func (c *twitterOauth1Client) Search(ctx context.Context, input *dtwitter.Search
 	return tweets, nil
 }
 
-func makeEntities(tweet *_twitter.Tweet) *dtwitter.Entities {
+func makeEntities(tweet *sdk.Tweet) *dtwitter.Entities {
 	entities := dtwitter.Entities{}
 
 	for _, hashtag := range tweet.Entities.Hashtags {
@@ -99,10 +99,10 @@ func makeEntities(tweet *_twitter.Tweet) *dtwitter.Entities {
 	return &entities
 }
 
-func (c *twitterOauth1Client) makeTwitterClient(ctx context.Context, accessToken string, accessTokenSecret string) *_twitter.Client {
+func (c *twitterOauth1Client) makeTwitterClient(ctx context.Context, accessToken string, accessTokenSecret string) *sdk.Client {
 	token := oauth1.NewToken(accessToken, accessTokenSecret)
 	httpClient := c.config.Client(ctx, token)
-	return _twitter.NewClient(httpClient)
+	return sdk.NewClient(httpClient)
 }
 
 func addExcludeRetweetOption(query string) string {
