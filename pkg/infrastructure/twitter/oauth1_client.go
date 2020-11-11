@@ -89,10 +89,10 @@ func makeEntities(tweet *_twitter.Tweet) *dtwitter.Entities {
 
 	for _, medium := range tweet.Entities.Media {
 		entities.Media = append(entities.Media, dtwitter.Medium{
-			Start:       medium.Indices.Start(),
-			End:         medium.Indices.End(),
-			URL:         medium.MediaURLHttps,
-			ExpandedURL: medium.ExpandedURL,
+			Start:    medium.Indices.Start(),
+			End:      medium.Indices.End(),
+			URL:      medium.URL,
+			MediaURL: medium.MediaURLHttps,
 		})
 	}
 

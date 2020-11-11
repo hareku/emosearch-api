@@ -70,8 +70,8 @@ type URL struct {
 
 // Medium represents Twitter Medium.
 type Medium struct {
-	Start       int
-	End         int
-	URL         string
-	ExpandedURL string
+	Start    int
+	End      int
+	URL      string
+	MediaURL string
 }
