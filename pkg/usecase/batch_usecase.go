@@ -122,7 +122,7 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 		TweetCreatedAt: tweet.CreatedAt,
 	}
 
-	if len(tweet.Text) >= 70 {
+	if shouldDetectScore(tweet) {
 		score, err := u.sentimentDetector.Detect(ctx, tweet.Text)
 		if err != nil {
 			return fmt.Errorf("failed to detect sentiment score of a tweet: %w", err)
@@ -136,4 +136,20 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 	}
 
 	return nil
+}
+
+func shouldDetectScore(tweet *twitter.Tweet) bool {
+	textLen := len(tweet.Text)
+
+	for _, url := range tweet.Entities.URLs {
+		textLen -= len(url.URL)
+	}
+	for _, med := range tweet.Entities.Media {
+		textLen -= len(med.URL)
+	}
+	for _, men := range tweet.Entities.Mentions {
+		textLen -= len(men.Tag)
+	}
+
+	return textLen >= 160
 }
