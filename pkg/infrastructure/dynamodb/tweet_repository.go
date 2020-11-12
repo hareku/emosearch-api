@@ -21,8 +21,9 @@ func NewDynamoDBTweetRepository(dynamoDB dynamo.Table) repository.TweetRepositor
 }
 
 type dynamoDBTweet struct {
-	PK string
-	SK string
+	PK                    string
+	SK                    string
+	TweetSentimentIndexPK string
 	*model.Tweet
 }
 
@@ -36,9 +37,10 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 	tweet.UpdatedAt = createdAt
 
 	dtweet := dynamoDBTweet{
-		PK:    fmt.Sprintf("SEARCH#%s", tweet.SearchID),
-		SK:    fmt.Sprintf("TWEET#%d", tweet.TweetID),
-		Tweet: tweet,
+		PK:                    fmt.Sprintf("SEARCH#%s", tweet.SearchID),
+		SK:                    fmt.Sprintf("TWEET#%d", tweet.TweetID),
+		TweetSentimentIndexPK: fmt.Sprintf("SEARCH#%s#%s", tweet.SearchID, tweet.SentimentLabel),
+		Tweet:                 tweet,
 	}
 
 	err := r.dynamoDB.Put(&dtweet).RunWithContext(ctx)
@@ -53,14 +55,7 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 func (r *dynamoDBTweetRepository) List(ctx context.Context, input *repository.TweetRepositoryListInput) ([]model.Tweet, error) {
 	var dTweets []dynamoDBTweet
 
-	q := r.dynamoDB.
-		Get("PK", fmt.Sprintf("SEARCH#%s", input.SearchID)).
-		Order(false).
-		Limit(input.Limit)
-	if input.UntilID != 0 {
-		q.Range("SK", dynamo.Less, fmt.Sprintf("TWEET#%d", input.UntilID))
-	}
-
+	q := r.buildListQuery(input)
 	err := q.AllWithContext(ctx, &dTweets)
 
 	if errors.Is(err, dynamo.ErrNotFound) {
@@ -77,6 +72,26 @@ func (r *dynamoDBTweetRepository) List(ctx context.Context, input *repository.Tw
 	}
 
 	return tweets, nil
+}
+
+func (r *dynamoDBTweetRepository) buildListQuery(input *repository.TweetRepositoryListInput) *dynamo.Query {
+	var q *dynamo.Query
+
+	if input.SentimentLabel == nil {
+		q = r.dynamoDB.Get("PK", fmt.Sprintf("SEARCH#%s", input.SearchID))
+	} else {
+		q = r.dynamoDB.
+			Get("TweetSentimentIndexPK", fmt.Sprintf("SEARCH#%s#%s", input.SearchID, *input.SentimentLabel)).
+			Index("TweetSentimentIndex")
+	}
+
+	q.Order(false).Limit(input.Limit)
+
+	if input.UntilID != 0 {
+		q.Range("SK", dynamo.Less, fmt.Sprintf("TWEET#%d", input.UntilID))
+	}
+
+	return q
 }
 
 func (r *dynamoDBTweetRepository) LatestTweetID(ctx context.Context, searchID model.SearchID) (model.TweetID, error) {

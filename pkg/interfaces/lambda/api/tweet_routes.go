@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
+	"github.com/hareku/emosearch-api/pkg/domain/sentiment"
 )
 
 func (h *handler) registerTweetRoutes() {
@@ -16,9 +17,10 @@ func (h *handler) registerTweetRoutes() {
 }
 
 type fetchTweetsInput struct {
-	SearchID model.SearchID `lambda:"path.search_id"`
-	UntilID  model.TweetID  `lambda:"query.until_id"`
-	Limit    int64          `lambda:"query.limit"`
+	SearchID       model.SearchID `lambda:"path.search_id"`
+	UntilID        model.TweetID  `lambda:"query.until_id"`
+	Limit          int64          `lambda:"query.limit"`
+	SentimentLabel string         `lambda:"query.sentiment_label"`
 }
 
 type fetchTweetsRes struct {
@@ -50,11 +52,18 @@ func (h *handler) fetchTweets() lmdrouter.Handler {
 		}
 
 		r := h.registry.NewTweetRepository()
-		tweets, err := r.List(ctx, &repository.TweetRepositoryListInput{
-			SearchID: input.SearchID,
-			UntilID:  input.UntilID,
-			Limit:    input.Limit + 1,
-		})
+		listInput := &repository.TweetRepositoryListInput{
+			SearchID:       input.SearchID,
+			UntilID:        input.UntilID,
+			Limit:          input.Limit + 1,
+			SentimentLabel: nil,
+		}
+		if input.SentimentLabel != "" {
+			label := sentiment.Label(input.SentimentLabel)
+			listInput.SentimentLabel = &label
+		}
+
+		tweets, err := r.List(ctx, listInput)
 		if err != nil {
 			return lmdrouter.HandleError(fmt.Errorf("failed to fetch tweets: %w", err))
 		}

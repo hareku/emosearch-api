@@ -121,16 +121,18 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 		Entities:           tweet.Entities,
 		Text:               tweet.Text,
 		SentimentScore:     nil,
+		SentimentLabel:     sentiment.LabelUndetected,
 		ExpirationUnixTime: time.Now().AddDate(0, 0, 14).Unix(),
 		TweetCreatedAt:     tweet.CreatedAt,
 	}
 
 	if shouldDetectScore(tweet) {
-		score, err := u.sentimentDetector.Detect(ctx, tweet.Text)
+		output, err := u.sentimentDetector.Detect(ctx, tweet.Text)
 		if err != nil {
 			return fmt.Errorf("failed to detect sentiment score of a tweet: %w", err)
 		}
-		dtweet.SentimentScore = score
+		dtweet.SentimentScore = &output.Score
+		dtweet.SentimentLabel = output.Label
 		dtweet.ExpirationUnixTime = time.Now().AddDate(0, 3, 0).Unix()
 	}
 

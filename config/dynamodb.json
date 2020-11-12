@@ -17,6 +17,10 @@
         {
             "AttributeName": "NextSearchUpdateAt",
             "AttributeType": "S"
+        },
+        {
+            "AttributeName": "TweetSentimentIndexPK",
+            "AttributeType": "S"
         }
     ],
     "KeySchema": [
@@ -39,6 +43,22 @@
                 },
                 {
                     "AttributeName": "NextSearchUpdateAt",
+                    "KeyType": "RANGE"
+                }
+            ],
+            "Projection": {
+                "ProjectionType": "ALL"
+            }
+        },
+        {
+            "IndexName": "TweetSentimentIndex",
+            "KeySchema": [
+                {
+                    "AttributeName": "TweetSentimentIndexPK",
+                    "KeyType": "HASH"
+                },
+                {
+                    "AttributeName": "SK",
                     "KeyType": "RANGE"
                 }
             ],

@@ -18,7 +18,7 @@ func NewComprehendDetector(client *comprehend.Comprehend) sentiment.Detector {
 	return &comprehendDetector{client}
 }
 
-func (d *comprehendDetector) Detect(ctx context.Context, text string) (*sentiment.Score, error) {
+func (d *comprehendDetector) Detect(ctx context.Context, text string) (*sentiment.DetectOutput, error) {
 	output, err := d.client.DetectSentimentWithContext(ctx, &comprehend.DetectSentimentInput{
 		LanguageCode: aws.String(comprehend.LanguageCodeJa),
 		Text:         aws.String(text),
@@ -27,12 +27,30 @@ func (d *comprehendDetector) Detect(ctx context.Context, text string) (*sentimen
 		return nil, fmt.Errorf("aws comprehend error: %w", err)
 	}
 
-	score := &sentiment.Score{
-		Mixed:    output.SentimentScore.Mixed,
-		Neutral:  output.SentimentScore.Neutral,
-		Negative: output.SentimentScore.Negative,
-		Positive: output.SentimentScore.Positive,
+	res := &sentiment.DetectOutput{
+		Score: sentiment.Score{
+			Mixed:    output.SentimentScore.Mixed,
+			Neutral:  output.SentimentScore.Neutral,
+			Negative: output.SentimentScore.Negative,
+			Positive: output.SentimentScore.Positive,
+		},
+		Label: determineLabel(output),
 	}
 
-	return score, nil
+	return res, nil
+}
+
+func determineLabel(output *comprehend.DetectSentimentOutput) sentiment.Label {
+	switch *output.Sentiment {
+	case comprehend.SentimentTypePositive:
+		return sentiment.LabelPositive
+	case comprehend.SentimentTypeNegative:
+		return sentiment.LabelNegative
+	case comprehend.SentimentTypeMixed:
+		return sentiment.LabelNeutral
+	case comprehend.SentimentTypeNeutral:
+		return sentiment.LabelNeutral
+	default:
+		return sentiment.LabelUnknown
+	}
 }
