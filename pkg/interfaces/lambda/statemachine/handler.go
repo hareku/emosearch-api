@@ -3,6 +3,7 @@ package statemachine
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
@@ -40,13 +41,11 @@ type StartListSearchesResEvent struct {
 	UserID   model.UserID   `json:"user_id"`
 }
 
-func (h *handler) listSearchesHandler(ctx context.Context) (StartListSearchesRes, error) {
-	r := h.registry.NewSearchRepository()
-	searches, err := r.List(ctx, repository.SearchRepositoryListInput{
-		Limit: 100,
-	})
+func (h *handler) listSearchesHandler(ctx context.Context) (*StartListSearchesRes, error) {
+	usc := h.registry.NewSearchUsecase()
+	searches, err := usc.ListShouldUpdateSearches(ctx)
 
-	res := StartListSearchesRes{
+	res := &StartListSearchesRes{
 		Events: []StartListSearchesResEvent{},
 	}
 
@@ -54,7 +53,7 @@ func (h *handler) listSearchesHandler(ctx context.Context) (StartListSearchesRes
 		return res, nil
 	}
 	if err != nil {
-		return res, err
+		return nil, fmt.Errorf("failed to list searches")
 	}
 
 	for _, search := range searches {

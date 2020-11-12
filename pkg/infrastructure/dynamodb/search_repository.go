@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/guregu/dynamo"
 	"github.com/hareku/emosearch-api/internal/uuid"
@@ -39,12 +38,16 @@ func (d *dynamoDBSearch) NewSearchModel() *model.Search {
 func (r *dynamoDBSearchRepository) List(ctx context.Context, input repository.SearchRepositoryListInput) ([]*model.Search, error) {
 	var items []dynamoDBSearch
 
-	err := r.dynamoDB.Get("SearchIndexPK", searchIndexPK).
+	q := r.dynamoDB.Get("SearchIndexPK", searchIndexPK).
 		Index("SearchIndex").
-		Range("NextSearchUpdateAt", dynamo.LessOrEqual, time.Now()).
 		Order(false).
-		Limit(input.Limit).
-		All(&items)
+		Limit(input.Limit)
+
+	if input.UntilNextSearchUpdateAt != nil {
+		q.Range("NextSearchUpdateAt", dynamo.LessOrEqual, *input.UntilNextSearchUpdateAt)
+	}
+
+	err := q.All(&items)
 
 	if errors.Is(err, dynamo.ErrNotFound) {
 		return nil, repository.ErrNotFound

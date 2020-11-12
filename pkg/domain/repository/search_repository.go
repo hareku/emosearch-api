@@ -2,13 +2,15 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/hareku/emosearch-api/pkg/domain/model"
 )
 
 // SearchRepositoryListInput is the input of List method.
 type SearchRepositoryListInput struct {
-	Limit int64
+	Limit                   int64
+	UntilNextSearchUpdateAt *time.Time
 }
 
 // SearchRepository provides CRUD methods for Search domain.

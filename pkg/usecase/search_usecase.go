@@ -14,6 +14,7 @@ import (
 
 // SearchUsecase provides usecases of Search domain.
 type SearchUsecase interface {
+	ListShouldUpdateSearches(ctx context.Context) ([]*model.Search, error)
 	ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error)
 	ListUserSearches(ctx context.Context) ([]*model.Search, error)
 	Find(ctx context.Context, searchID model.SearchID, userID model.UserID) (*model.Search, error)
@@ -32,6 +33,19 @@ type searchUsecase struct {
 // NewSearchUsecase creates SearchUsecase.
 func NewSearchUsecase(authenticator auth.Authenticator, validator validator.Validator, searchRepository repository.SearchRepository) SearchUsecase {
 	return &searchUsecase{authenticator, validator, searchRepository}
+}
+
+func (u *searchUsecase) ListShouldUpdateSearches(ctx context.Context) ([]*model.Search, error) {
+	now := time.Now()
+	searches, err := u.searchRepository.List(ctx, repository.SearchRepositoryListInput{
+		Limit:                   100,
+		UntilNextSearchUpdateAt: &now,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list searches: %w", err)
+	}
+
+	return searches, nil
 }
 
 func (u *searchUsecase) ListByUserID(ctx context.Context, userID model.UserID) ([]*model.Search, error) {
