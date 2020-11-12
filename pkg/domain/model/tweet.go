@@ -27,8 +27,8 @@ type Tweet struct {
 	Text               string
 	SentimentScore     *sentiment.Score `dynamo:",null"`
 	SentimentLabel     sentiment.Label
-	Entities           *twitter.Entities `dynamo:",null"`
-	ExpirationUnixTime int64             `json:"-"`
+	Entities           twitter.Entities
+	ExpirationUnixTime int64 `json:"-"`
 	TweetCreatedAt     time.Time
 	CreatedAt          time.Time
 	UpdatedAt          time.Time

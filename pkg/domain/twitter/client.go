@@ -33,7 +33,7 @@ type Tweet struct {
 	AuthorID  int64
 	User      *User
 	Text      string
-	Entities  *Entities
+	Entities  Entities
 	CreatedAt time.Time
 }
 

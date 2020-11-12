@@ -58,7 +58,7 @@ func (c *twitterOauth1Client) Search(ctx context.Context, input *dtwitter.Search
 	return tweets, nil
 }
 
-func makeEntities(tweet *sdk.Tweet) *dtwitter.Entities {
+func makeEntities(tweet *sdk.Tweet) dtwitter.Entities {
 	entities := dtwitter.Entities{}
 
 	for _, hashtag := range tweet.Entities.Hashtags {
@@ -102,7 +102,7 @@ func makeEntities(tweet *sdk.Tweet) *dtwitter.Entities {
 		}
 	}
 
-	return &entities
+	return entities
 }
 
 func (c *twitterOauth1Client) makeTwitterClient(ctx context.Context, accessToken string, accessTokenSecret string) *sdk.Client {
