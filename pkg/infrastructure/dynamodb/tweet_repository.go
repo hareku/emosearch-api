@@ -9,6 +9,7 @@ import (
 	"github.com/guregu/dynamo"
 	"github.com/hareku/emosearch-api/pkg/domain/model"
 	"github.com/hareku/emosearch-api/pkg/domain/repository"
+	"github.com/hareku/emosearch-api/pkg/domain/sentiment"
 )
 
 type dynamoDBTweetRepository struct {
@@ -39,7 +40,7 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 	dtweet := dynamoDBTweet{
 		PK:                    fmt.Sprintf("SEARCH#%s", tweet.SearchID),
 		SK:                    fmt.Sprintf("TWEET#%d", tweet.TweetID),
-		TweetSentimentIndexPK: fmt.Sprintf("SEARCH#%s#%s", tweet.SearchID, tweet.SentimentLabel),
+		TweetSentimentIndexPK: r.buildTweetSentimentIndexPK(tweet.SearchID, tweet.SentimentLabel),
 		Tweet:                 tweet,
 	}
 
@@ -81,7 +82,7 @@ func (r *dynamoDBTweetRepository) buildListQuery(input *repository.TweetReposito
 		q = r.dynamoDB.Get("PK", fmt.Sprintf("SEARCH#%s", input.SearchID))
 	} else {
 		q = r.dynamoDB.
-			Get("TweetSentimentIndexPK", fmt.Sprintf("SEARCH#%s#%s", input.SearchID, *input.SentimentLabel)).
+			Get("TweetSentimentIndexPK", r.buildTweetSentimentIndexPK(input.SearchID, *input.SentimentLabel)).
 			Index("TweetSentimentIndex")
 	}
 
@@ -110,4 +111,12 @@ func (r *dynamoDBTweetRepository) LatestTweetID(ctx context.Context, searchID mo
 	}
 
 	return dynamoTweet.TweetID, nil
+}
+
+func (r *dynamoDBTweetRepository) buildTweetSentimentIndexPK(ID model.SearchID, label sentiment.Label) string {
+	labelKey := label
+	if label == sentiment.LabelPositive || label == sentiment.LabelNegative {
+		labelKey = "POS_OR_NEG__" + labelKey
+	}
+	return fmt.Sprintf("SEARCH#%s#%s", ID, labelKey)
 }
