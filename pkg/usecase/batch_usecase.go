@@ -145,9 +145,13 @@ func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, twe
 }
 
 func shouldDetectScore(tweet *twitter.Tweet) bool {
+	ngURLs := []string{"youtu.be", "youtube.com", "nicovideo", "peing.net"}
+
 	for _, url := range tweet.Entities.URLs {
-		if strings.Contains(url.ExpandedURL, "youtu.be") || strings.Contains(url.ExpandedURL, "youtube.com") {
-			return false
+		for _, ngURL := range ngURLs {
+			if strings.Contains(url.ExpandedURL, ngURL) {
+				return false
+			}
 		}
 	}
 
