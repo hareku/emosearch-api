@@ -25,7 +25,7 @@ type Tweet struct {
 	AuthorID           int64 `json:",string"`
 	User               *TwitterUser
 	Text               string
-	SentimentScore     *sentiment.Score `dynamo:",null"`
+	SentimentScore     *sentiment.Score
 	SentimentLabel     sentiment.Label
 	Entities           twitter.Entities
 	ExpirationUnixTime int64 `json:"-"`
