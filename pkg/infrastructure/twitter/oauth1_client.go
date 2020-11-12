@@ -90,14 +90,26 @@ func makeEntities(tweet *sdk.Tweet) dtwitter.Entities {
 	if tweet.ExtendedEntities != nil {
 		for _, medium := range tweet.ExtendedEntities.Media {
 			m := dtwitter.Medium{
-				Start:    medium.Indices.Start(),
-				End:      medium.Indices.End(),
-				URL:      medium.URL,
-				MediaURL: medium.MediaURLHttps,
-				VideoURL: "",
-				Type:     medium.Type,
+				Start:     medium.Indices.Start(),
+				End:       medium.Indices.End(),
+				URL:       medium.URL,
+				MediaURL:  medium.MediaURLHttps,
+				Type:      medium.Type,
+				VideoInfo: nil,
 			}
-			addVideoURL(&m, &medium)
+			if len(medium.VideoInfo.Variants) > 0 {
+				m.VideoInfo = &dtwitter.VideoInfo{
+					AspectRatio:    medium.VideoInfo.AspectRatio,
+					DurationMillis: medium.VideoInfo.DurationMillis,
+				}
+				for _, v := range medium.VideoInfo.Variants {
+					m.VideoInfo.Variants = append(m.VideoInfo.Variants, dtwitter.VideoVariant{
+						ContentType: v.ContentType,
+						Bitrate:     v.Bitrate,
+						URL:         v.URL,
+					})
+				}
+			}
 			entities.Media = append(entities.Media, m)
 		}
 	}
@@ -109,28 +121,6 @@ func (c *twitterOauth1Client) makeTwitterClient(ctx context.Context, accessToken
 	token := oauth1.NewToken(accessToken, accessTokenSecret)
 	httpClient := c.config.Client(ctx, token)
 	return sdk.NewClient(httpClient)
-}
-
-func addVideoURL(target *dtwitter.Medium, medium *sdk.MediaEntity) {
-	variants := medium.VideoInfo.Variants
-
-	if len(variants) == 0 {
-		return
-	}
-
-	var cand *sdk.VideoVariant
-	for _, v := range variants {
-		if v.ContentType != "video/mp4" {
-			continue
-		}
-		if cand == nil || cand.Bitrate < v.Bitrate {
-			cand = &v
-		}
-	}
-
-	if cand != nil {
-		target.VideoURL = cand.URL
-	}
 }
 
 func addExcludeRetweetOption(query string) string {

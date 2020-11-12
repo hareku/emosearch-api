@@ -70,10 +70,24 @@ type URL struct {
 
 // Medium represents Twitter Medium.
 type Medium struct {
-	Start    int
-	End      int
-	URL      string
-	MediaURL string
-	VideoURL string
-	Type     string
+	Start     int
+	End       int
+	URL       string
+	MediaURL  string
+	Type      string
+	VideoInfo *VideoInfo
+}
+
+// VideoInfo is available on video media objects.
+type VideoInfo struct {
+	AspectRatio    [2]int
+	DurationMillis int
+	Variants       []VideoVariant
+}
+
+// VideoVariant describes one of the available video formats.
+type VideoVariant struct {
+	ContentType string
+	Bitrate     int
+	URL         string
 }
