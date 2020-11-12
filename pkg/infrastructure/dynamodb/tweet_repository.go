@@ -53,6 +53,29 @@ func (r *dynamoDBTweetRepository) Store(ctx context.Context, tweet *model.Tweet)
 	return nil
 }
 
+func (r *dynamoDBTweetRepository) BatchStore(ctx context.Context, tweets []*model.Tweet) error {
+	createdAt := time.Now()
+	dynamoTweets := []interface{}{}
+
+	for _, tweet := range tweets {
+		tweet.CreatedAt = createdAt
+		tweet.UpdatedAt = createdAt
+		dynamoTweets = append(dynamoTweets, dynamoDBTweet{
+			PK:                    fmt.Sprintf("SEARCH#%s", tweet.SearchID),
+			SK:                    fmt.Sprintf("TWEET#%d", tweet.TweetID),
+			TweetSentimentIndexPK: r.buildTweetSentimentIndexPK(tweet.SearchID, tweet.SentimentLabel),
+			Tweet:                 tweet,
+		})
+	}
+
+	_, err := r.dynamoDB.Batch().Write().Put(dynamoTweets...).RunWithContext(ctx)
+	if err != nil {
+		return fmt.Errorf("dynamo error: %w", err)
+	}
+
+	return nil
+}
+
 func (r *dynamoDBTweetRepository) List(ctx context.Context, input *repository.TweetRepositoryListInput) ([]model.Tweet, error) {
 	var dTweets []dynamoDBTweet
 

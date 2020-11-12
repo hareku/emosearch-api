@@ -34,14 +34,39 @@ func (d *comprehendDetector) Detect(ctx context.Context, text string) (*sentimen
 			Negative: output.SentimentScore.Negative,
 			Positive: output.SentimentScore.Positive,
 		},
-		Label: determineLabel(output),
+		Label: determineLabel(output.Sentiment),
 	}
 
 	return res, nil
 }
 
-func determineLabel(output *comprehend.DetectSentimentOutput) sentiment.Label {
-	switch *output.Sentiment {
+func (d *comprehendDetector) BatchDetect(ctx context.Context, textList []*string) ([]sentiment.DetectOutput, error) {
+	output, err := d.client.BatchDetectSentimentWithContext(ctx, &comprehend.BatchDetectSentimentInput{
+		LanguageCode: aws.String(comprehend.LanguageCodeJa),
+		TextList:     textList,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("aws comprehend error: %w", err)
+	}
+
+	res := []sentiment.DetectOutput{}
+	for _, result := range output.ResultList {
+		res = append(res, sentiment.DetectOutput{
+			Score: sentiment.Score{
+				Mixed:    result.SentimentScore.Mixed,
+				Neutral:  result.SentimentScore.Neutral,
+				Negative: result.SentimentScore.Negative,
+				Positive: result.SentimentScore.Positive,
+			},
+			Label: determineLabel(result.Sentiment),
+		})
+	}
+
+	return res, nil
+}
+
+func determineLabel(comprehendLabel *string) sentiment.Label {
+	switch *comprehendLabel {
 	case comprehend.SentimentTypePositive:
 		return sentiment.LabelPositive
 	case comprehend.SentimentTypeNegative:

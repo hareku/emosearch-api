@@ -10,6 +10,7 @@ import (
 // TweetRepository provides CRUD methods for Tweet domain.
 type TweetRepository interface {
 	Store(ctx context.Context, tweet *model.Tweet) error
+	BatchStore(ctx context.Context, tweets []*model.Tweet) error
 	LatestTweetID(ctx context.Context, searchID model.SearchID) (model.TweetID, error)
 	List(ctx context.Context, input *TweetRepositoryListInput) ([]model.Tweet, error)
 }

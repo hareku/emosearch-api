@@ -41,4 +41,5 @@ type DetectOutput struct {
 // Detector provides sentiment detections.
 type Detector interface {
 	Detect(ctx context.Context, text string) (*DetectOutput, error)
+	BatchDetect(ctx context.Context, textList []*string) ([]DetectOutput, error)
 }

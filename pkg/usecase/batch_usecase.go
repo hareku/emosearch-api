@@ -47,105 +47,191 @@ func NewBatchUsecase(input *NewBatchUsecaseInput) BatchUsecase {
 }
 
 func (u *batchUsecase) CollectTweets(ctx context.Context, searchID model.SearchID, userID model.UserID) error {
-	search, err := u.searchUsecase.Find(ctx, searchID, userID)
+	search, input, err := u.prepareToCollectTweets(ctx, searchID, userID)
 	if err != nil {
-		return err
-	}
-	if search == nil {
-		return nil
+		return fmt.Errorf("collect tweets preparation error: %w", err)
 	}
 
-	user, err := u.userUsecase.FindByID(ctx, search.UserID)
+	err = u.runCollection(ctx, search, input)
 	if err != nil {
-		return err
-	}
-
-	input := twitter.SearchInput{
-		Query:                    search.Query,
-		TwitterAccessToken:       user.TwitterAccessToken,
-		TwitterAccessTokenSecret: user.TwitterAccessTokenSecret,
-	}
-
-	latestTweetID, err := u.tweetRepository.LatestTweetID(ctx, search.SearchID)
-	if err != nil && !errors.Is(err, repository.ErrNotFound) {
-		return err
-	}
-	input.SinceID = int64(latestTweetID)
-
-	tweets, err := u.twitterClient.Search(ctx, &input)
-	if err != nil {
-		return err
-	}
-	if len(tweets) == 0 {
-		return nil
-	}
-
-	for {
-		if err != nil {
-			return err
-		}
-		// break because Input.MaxID returns results with an ID less than (that is, older than) or equal to the specified ID.
-		if len(tweets) == 1 {
-			break
-		}
-
-		for i := 0; i < len(tweets); i++ {
-			err = u.storeTweet(ctx, search, &tweets[i])
-			if err != nil {
-				return err
-			}
-		}
-
-		input.MaxID = tweets[len(tweets)-1].TweetID
-		tweets, err = u.twitterClient.Search(ctx, &input)
+		return fmt.Errorf("failed to collect tweets: %w", err)
 	}
 
 	err = u.searchUsecase.UpdateNextUpdateAt(ctx, search)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to save next search update at: %w", err)
 	}
 	return nil
 }
 
-func (u *batchUsecase) storeTweet(ctx context.Context, search *model.Search, tweet *twitter.Tweet) error {
-	dtweet := model.Tweet{
-		TweetID:  model.TweetID(tweet.TweetID),
-		SearchID: search.SearchID,
-		AuthorID: tweet.AuthorID,
-		User: &model.TwitterUser{
-			ID:              tweet.User.ID,
-			Name:            tweet.User.Name,
-			ScreenName:      tweet.User.ScreenName,
-			ProfileImageURL: tweet.User.ProfileImageURL,
-		},
-		Entities:           tweet.Entities,
-		Text:               tweet.Text,
-		SentimentScore:     nil,
-		SentimentLabel:     sentiment.LabelUndetected,
-		ExpirationUnixTime: time.Now().AddDate(0, 0, 14).Unix(),
-		TweetCreatedAt:     tweet.CreatedAt,
-	}
-
-	if shouldDetectScore(tweet) {
-		output, err := u.sentimentDetector.Detect(ctx, tweet.Text)
-		if err != nil {
-			return fmt.Errorf("failed to detect sentiment score of a tweet: %w", err)
-		}
-		dtweet.SentimentScore = &output.Score
-		dtweet.SentimentLabel = output.Label
-		dtweet.ExpirationUnixTime = time.Now().AddDate(0, 3, 0).Unix()
-	}
-
-	err := u.tweetRepository.Store(ctx, &dtweet)
+func (u *batchUsecase) prepareToCollectTweets(ctx context.Context, searchID model.SearchID, userID model.UserID) (*model.Search, *twitter.SearchInput, error) {
+	search, err := u.searchUsecase.Find(ctx, searchID, userID)
 	if err != nil {
-		return fmt.Errorf("failed to store a tweet: %w", err)
+		return nil, nil, fmt.Errorf("failed to fetch search: %w", err)
+	}
+	if search == nil {
+		return nil, nil, fmt.Errorf("specified search (id: %s) not found: %w", searchID, err)
+	}
+
+	user, err := u.userUsecase.FindByID(ctx, search.UserID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to fetch user: %w", err)
+	}
+
+	latestTweetID, err := u.tweetRepository.LatestTweetID(ctx, search.SearchID)
+	if err != nil && !errors.Is(err, repository.ErrNotFound) {
+		return nil, nil, fmt.Errorf("failed to get latest collected tweet id: %w", err)
+	}
+	input := &twitter.SearchInput{
+		Query:                    search.Query,
+		TwitterAccessToken:       user.TwitterAccessToken,
+		TwitterAccessTokenSecret: user.TwitterAccessTokenSecret,
+		SinceID:                  int64(latestTweetID),
+	}
+
+	return search, input, nil
+}
+
+func (u *batchUsecase) runCollection(ctx context.Context, search *model.Search, input *twitter.SearchInput) error {
+	tweetsBuf := []*twitter.Tweet{}
+	tweetsDetectBuf := []*twitter.Tweet{}
+
+	for {
+		tweets, err := u.twitterClient.Search(ctx, input)
+		if err != nil {
+			return fmt.Errorf("twitter search error: %w", err)
+		}
+		// MaxID option includes itself
+		if input.MaxID != 0 && len(tweets) > 0 {
+			tweets = tweets[1:]
+		}
+
+		if len(tweets) == 0 {
+			break
+		}
+
+		for i := 0; i < len(tweets); i++ {
+			tweet := &tweets[i]
+
+			if shouldDetectScore(tweet) {
+				tweetsDetectBuf = append(tweetsDetectBuf, tweet)
+				if len(tweetsDetectBuf) == 25 {
+					err = u.batchStoreTweetsWithDetection(ctx, search, tweetsDetectBuf)
+					if err != nil {
+						return fmt.Errorf("failed to batch store tweets with sentiment detection: %w", err)
+					}
+					tweetsDetectBuf = tweetsDetectBuf[:0]
+				}
+			} else {
+				tweetsBuf = append(tweetsBuf, tweet)
+				if len(tweetsBuf) == 25 {
+					err = u.batchStoreTweets(ctx, search, tweetsBuf)
+					if err != nil {
+						return fmt.Errorf("failed to batch store tweets: %w", err)
+					}
+					tweetsBuf = tweetsBuf[:0]
+				}
+			}
+		}
+
+		input.MaxID = tweets[len(tweets)-1].TweetID
+	}
+
+	if len(tweetsDetectBuf) > 0 {
+		err := u.batchStoreTweetsWithDetection(ctx, search, tweetsDetectBuf)
+		if err != nil {
+			return fmt.Errorf("failed to batch store tweets with sentiment detection: %w", err)
+		}
+	}
+	if len(tweetsBuf) > 0 {
+		err := u.batchStoreTweets(ctx, search, tweetsBuf)
+		if err != nil {
+			return fmt.Errorf("failed to batch store tweets: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (u *batchUsecase) batchStoreTweets(ctx context.Context, search *model.Search, tweets []*twitter.Tweet) error {
+	fmt.Printf("writing tweets: %d\n", len(tweets))
+	modelTweets := []*model.Tweet{}
+
+	for _, tweet := range tweets {
+		modelTweets = append(modelTweets, &model.Tweet{
+			TweetID:  model.TweetID(tweet.TweetID),
+			SearchID: search.SearchID,
+			AuthorID: tweet.AuthorID,
+			User: &model.TwitterUser{
+				ID:              tweet.User.ID,
+				Name:            tweet.User.Name,
+				ScreenName:      tweet.User.ScreenName,
+				ProfileImageURL: tweet.User.ProfileImageURL,
+			},
+			Entities:           tweet.Entities,
+			Text:               tweet.Text,
+			SentimentScore:     nil,
+			SentimentLabel:     sentiment.LabelUndetected,
+			ExpirationUnixTime: time.Now().AddDate(0, 0, 14).Unix(),
+			TweetCreatedAt:     tweet.CreatedAt,
+		})
+	}
+
+	err := u.tweetRepository.BatchStore(ctx, modelTweets)
+	if err != nil {
+		return fmt.Errorf("failed to batch store tweets: %w", err)
+	}
+
+	return nil
+}
+
+func (u *batchUsecase) batchStoreTweetsWithDetection(ctx context.Context, search *model.Search, tweets []*twitter.Tweet) error {
+	fmt.Printf("writing tweets with detection: %d\n", len(tweets))
+
+	textList := []*string{}
+	for _, tweet := range tweets {
+		textList = append(textList, &tweet.Text)
+	}
+
+	detectOutputs, err := u.sentimentDetector.BatchDetect(ctx, textList)
+	if err != nil {
+		return fmt.Errorf("failed to batch detect sentiment score %w", err)
+	}
+
+	modelTweets := []*model.Tweet{}
+
+	for i, tweet := range tweets {
+		detectOutput := detectOutputs[i]
+
+		modelTweets = append(modelTweets, &model.Tweet{
+			TweetID:  model.TweetID(tweet.TweetID),
+			SearchID: search.SearchID,
+			AuthorID: tweet.AuthorID,
+			User: &model.TwitterUser{
+				ID:              tweet.User.ID,
+				Name:            tweet.User.Name,
+				ScreenName:      tweet.User.ScreenName,
+				ProfileImageURL: tweet.User.ProfileImageURL,
+			},
+			Entities:           tweet.Entities,
+			Text:               tweet.Text,
+			SentimentScore:     &detectOutput.Score,
+			SentimentLabel:     detectOutput.Label,
+			ExpirationUnixTime: time.Now().AddDate(0, 3, 0).Unix(),
+			TweetCreatedAt:     tweet.CreatedAt,
+		})
+	}
+
+	err = u.tweetRepository.BatchStore(ctx, modelTweets)
+	if err != nil {
+		return fmt.Errorf("failed to batch store tweets: %w", err)
 	}
 
 	return nil
 }
 
 func shouldDetectScore(tweet *twitter.Tweet) bool {
-	ngURLs := []string{"youtu.be", "youtube.com", "nicovideo", "peing.net"}
+	ngURLs := []string{"youtu.be", "youtube.com", "nicovideo", "nico.ms", "peing.net"}
 
 	for _, url := range tweet.Entities.URLs {
 		for _, ngURL := range ngURLs {
