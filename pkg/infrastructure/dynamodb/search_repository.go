@@ -21,6 +21,10 @@ func NewDynamoDBSearchRepository(dynamoDB dynamo.Table) repository.SearchReposit
 	return &dynamoDBSearchRepository{dynamoDB}
 }
 
+// This value is used for "SearchIndex" GSI of DynamoDB.
+// May be split into random numbers in the future.
+const searchIndexPK = 1
+
 type dynamoDBSearch struct {
 	PK            string
 	SK            string
@@ -35,7 +39,7 @@ func (d *dynamoDBSearch) NewSearchModel() *model.Search {
 func (r *dynamoDBSearchRepository) List(ctx context.Context, input repository.SearchRepositoryListInput) ([]*model.Search, error) {
 	var items []dynamoDBSearch
 
-	err := r.dynamoDB.Get("SearchIndexPK", 1).
+	err := r.dynamoDB.Get("SearchIndexPK", searchIndexPK).
 		Index("SearchIndex").
 		Range("NextSearchUpdateAt", dynamo.LessOrEqual, time.Now()).
 		Order(false).
@@ -80,12 +84,12 @@ func (r *dynamoDBSearchRepository) ListByUserID(ctx context.Context, userID mode
 }
 
 func (r *dynamoDBSearchRepository) Find(ctx context.Context, userID model.UserID, searchID model.SearchID) (*model.Search, error) {
-	var dSearch dynamoDBSearch
+	var dynamoSearch dynamoDBSearch
 
 	err := r.dynamoDB.
 		Get("PK", fmt.Sprintf("USER#%s", userID)).
 		Range("SK", dynamo.Equal, fmt.Sprintf("SEARCH#%s", searchID)).
-		OneWithContext(ctx, &dSearch)
+		OneWithContext(ctx, &dynamoSearch)
 
 	if errors.Is(err, dynamo.ErrNotFound) {
 		return nil, repository.ErrNotFound
@@ -94,7 +98,7 @@ func (r *dynamoDBSearchRepository) Find(ctx context.Context, userID model.UserID
 		return nil, fmt.Errorf("dynamo error: %w", err)
 	}
 
-	return dSearch.NewSearchModel(), nil
+	return dynamoSearch.NewSearchModel(), nil
 }
 
 func (r *dynamoDBSearchRepository) Create(ctx context.Context, search *model.Search) error {
@@ -104,17 +108,17 @@ func (r *dynamoDBSearchRepository) Create(ctx context.Context, search *model.Sea
 	}
 	search.SearchID = model.SearchID(searchID)
 
-	dsearch := dynamoDBSearch{
+	dynamoSearch := dynamoDBSearch{
 		PK:            fmt.Sprintf("USER#%s", search.UserID),
 		SK:            fmt.Sprintf("SEARCH#%s", search.SearchID),
-		SearchIndexPK: 1,
+		SearchIndexPK: searchIndexPK,
 		Search:        search,
 	}
 
-	err = r.dynamoDB.Put(&dsearch).RunWithContext(ctx)
+	err = r.dynamoDB.Put(&dynamoSearch).RunWithContext(ctx)
 
 	if err != nil {
-		return fmt.Errorf("DynamoDB error: %w", err)
+		return fmt.Errorf("dynamo error: %w", err)
 	}
 
 	return nil
