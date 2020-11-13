@@ -198,9 +198,6 @@ func shouldDetectScore(tweet *twitter.Tweet) bool {
 	for _, url := range tweet.Entities.URLs {
 		textLen -= len(url.URL)
 	}
-	for _, med := range tweet.Entities.Media {
-		textLen -= len(med.URL)
-	}
 	for _, men := range tweet.Entities.Mentions {
 		textLen -= len(men.Tag)
 	}
@@ -208,5 +205,5 @@ func shouldDetectScore(tweet *twitter.Tweet) bool {
 		textLen -= len(hash.Tag)
 	}
 
-	return textLen >= 160
+	return textLen >= 220
 }
