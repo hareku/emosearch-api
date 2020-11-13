@@ -24,10 +24,9 @@ func getDynamoTable() *dynamo.Table {
 		}
 
 		endpoint := os.Getenv("AWS_ENDPOINT")
-		if endpoint == "" {
-			endpoint = "http://dynamodb:8000"
+		if endpoint != "" {
+			awsConf.Endpoint = aws.String(endpoint)
 		}
-		awsConf.Endpoint = aws.String(endpoint)
 
 		dynamoDB := dynamo.New(session.New(), awsConf)
 		table := dynamoDB.Table("EmoSearchAPI")
