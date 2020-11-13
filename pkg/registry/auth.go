@@ -12,33 +12,37 @@ import (
 	"google.golang.org/api/option"
 )
 
-func makeFirebaseAuth() (*firebase_auth.Client, error) {
-	bytes, err := google.GetGoogleServiceAccountKey()
-	if err != nil {
-		return nil, fmt.Errorf("google service account key is not found: %w", err)
+var firebaseAuthClient *firebase_auth.Client
+
+func getFirebaseAuthClient() (*firebase_auth.Client, error) {
+	if firebaseAuthClient == nil {
+		ctx := context.Background()
+
+		key, err := google.GetGoogleServiceAccountKey()
+		if err != nil {
+			return nil, fmt.Errorf("google service account key error: %w", err)
+		}
+
+		app, err := firebase_app.NewApp(ctx, nil, option.WithCredentialsJSON(key))
+		if err != nil {
+			return nil, fmt.Errorf("firebase app error: %w", err)
+		}
+
+		client, err := app.Auth(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("firebase authentication error: %w", err)
+		}
+
+		firebaseAuthClient = client
 	}
 
-	opt := option.WithCredentialsJSON(bytes)
-	var config *firebase_app.Config
-	ctx := context.Background()
-
-	app, err := firebase_app.NewApp(ctx, config, opt)
-	if err != nil {
-		return nil, fmt.Errorf("firebase error: %w", err)
-	}
-
-	client, err := app.Auth(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("firebase-authentication error: %w", err)
-	}
-
-	return client, nil
+	return firebaseAuthClient, nil
 }
 
 func (r *registry) NewAuthenticator() auth.Authenticator {
-	firebaseAuth, err := makeFirebaseAuth()
+	firebaseAuth, err := getFirebaseAuthClient()
 	if err != nil {
-		panic(fmt.Errorf("firebase error: %w", err))
+		panic(fmt.Errorf("failed to get firebase auth client: %w", err))
 	}
 
 	return firebase_infra.NewFirebaseAuthenticator(firebaseAuth)
