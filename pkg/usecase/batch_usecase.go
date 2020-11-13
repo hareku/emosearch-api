@@ -94,7 +94,6 @@ func (u *batchUsecase) prepareToCollectTweets(ctx context.Context, searchID mode
 
 func (u *batchUsecase) runCollection(ctx context.Context, search *model.Search, input *twitter.SearchInput) error {
 	tweetsBuf := []*twitter.Tweet{}
-	tweetsDetectBuf := []*twitter.Tweet{}
 
 	for {
 		tweets, err := u.twitterClient.Search(ctx, input)
@@ -114,20 +113,11 @@ func (u *batchUsecase) runCollection(ctx context.Context, search *model.Search, 
 			tweet := &tweets[i]
 
 			if shouldDetectScore(tweet) {
-				tweetsDetectBuf = append(tweetsDetectBuf, tweet)
-				if len(tweetsDetectBuf) == 25 {
-					err = u.batchStoreTweetsWithDetection(ctx, search, tweetsDetectBuf)
-					if err != nil {
-						return fmt.Errorf("failed to batch store tweets with sentiment detection: %w", err)
-					}
-					tweetsDetectBuf = tweetsDetectBuf[:0]
-				}
-			} else {
 				tweetsBuf = append(tweetsBuf, tweet)
 				if len(tweetsBuf) == 25 {
-					err = u.batchStoreTweets(ctx, search, tweetsBuf)
+					err = u.batchStoreTweetsWithDetection(ctx, search, tweetsBuf)
 					if err != nil {
-						return fmt.Errorf("failed to batch store tweets: %w", err)
+						return fmt.Errorf("failed to batch store tweets with sentiment detection: %w", err)
 					}
 					tweetsBuf = tweetsBuf[:0]
 				}
@@ -137,49 +127,11 @@ func (u *batchUsecase) runCollection(ctx context.Context, search *model.Search, 
 		input.MaxID = tweets[len(tweets)-1].TweetID
 	}
 
-	if len(tweetsDetectBuf) > 0 {
-		err := u.batchStoreTweetsWithDetection(ctx, search, tweetsDetectBuf)
+	if len(tweetsBuf) > 0 {
+		err := u.batchStoreTweetsWithDetection(ctx, search, tweetsBuf)
 		if err != nil {
 			return fmt.Errorf("failed to batch store tweets with sentiment detection: %w", err)
 		}
-	}
-	if len(tweetsBuf) > 0 {
-		err := u.batchStoreTweets(ctx, search, tweetsBuf)
-		if err != nil {
-			return fmt.Errorf("failed to batch store tweets: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func (u *batchUsecase) batchStoreTweets(ctx context.Context, search *model.Search, tweets []*twitter.Tweet) error {
-	fmt.Printf("writing tweets: %d\n", len(tweets))
-	modelTweets := []*model.Tweet{}
-
-	for _, tweet := range tweets {
-		modelTweets = append(modelTweets, &model.Tweet{
-			TweetID:  model.TweetID(tweet.TweetID),
-			SearchID: search.SearchID,
-			AuthorID: tweet.AuthorID,
-			User: &model.TwitterUser{
-				ID:              tweet.User.ID,
-				Name:            tweet.User.Name,
-				ScreenName:      tweet.User.ScreenName,
-				ProfileImageURL: tweet.User.ProfileImageURL,
-			},
-			Entities:           tweet.Entities,
-			Text:               tweet.Text,
-			SentimentScore:     nil,
-			SentimentLabel:     sentiment.LabelUndetected,
-			ExpirationUnixTime: time.Now().AddDate(0, 0, 14).Unix(),
-			TweetCreatedAt:     tweet.CreatedAt,
-		})
-	}
-
-	err := u.tweetRepository.BatchStore(ctx, modelTweets)
-	if err != nil {
-		return fmt.Errorf("failed to batch store tweets: %w", err)
 	}
 
 	return nil
@@ -217,7 +169,7 @@ func (u *batchUsecase) batchStoreTweetsWithDetection(ctx context.Context, search
 			Text:               tweet.Text,
 			SentimentScore:     &detectOutput.Score,
 			SentimentLabel:     detectOutput.Label,
-			ExpirationUnixTime: time.Now().AddDate(0, 3, 0).Unix(),
+			ExpirationUnixTime: time.Now().AddDate(0, 6, 0).Unix(),
 			TweetCreatedAt:     tweet.CreatedAt,
 		})
 	}
