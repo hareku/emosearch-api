@@ -47,7 +47,7 @@ func (r *dynamoDBSearchRepository) List(ctx context.Context, input repository.Se
 		q.Range("NextSearchUpdateAt", dynamo.LessOrEqual, *input.UntilNextSearchUpdateAt)
 	}
 
-	err := q.All(&items)
+	err := q.AllWithContext(ctx, &items)
 
 	if errors.Is(err, dynamo.ErrNotFound) {
 		return nil, repository.ErrNotFound
