@@ -53,7 +53,7 @@ func (h *handler) listSearchesHandler(ctx context.Context) (*StartListSearchesRe
 		return res, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to list searches")
+		return nil, fmt.Errorf("failed to list searches: %w", err)
 	}
 
 	for _, search := range searches {
