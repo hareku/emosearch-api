@@ -11,6 +11,7 @@ Globals:
     Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
       Variables:
         GOOGLE_SERVICE_ACCOUNT_KEY: ""
+        GOOGLE_SERVICE_ACCOUNT_KEY_SECRETS_MANAGER_ARN: !Ref GoogleServiceAccountKey
         AWS_ENDPOINT: ""
         TWITTER_CONSUMER_KEY: ""
         TWITTER_CONSUMER_SECRET: ""
