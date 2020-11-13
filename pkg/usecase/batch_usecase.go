@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -138,7 +139,7 @@ func (u *batchUsecase) runCollection(ctx context.Context, search *model.Search, 
 }
 
 func (u *batchUsecase) batchStoreTweetsWithDetection(ctx context.Context, search *model.Search, tweets []*twitter.Tweet) error {
-	fmt.Printf("writing tweets with detection: %d\n", len(tweets))
+	log.Printf("Writing %d tweets with sentiment detection.\n", len(tweets))
 
 	textList := []*string{}
 	for _, tweet := range tweets {
