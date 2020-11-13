@@ -148,6 +148,7 @@ func (u *searchUsecase) Create(ctx context.Context, input *SearchUsecaseCreateIn
 }
 
 func (u *searchUsecase) UpdateNextUpdateAt(ctx context.Context, search *model.Search) error {
+	search.LastSearchUpdateAt = time.Now()
 	search.NextSearchUpdateAt = time.Now().Add(30 * time.Minute)
 	err := u.searchRepository.Update(ctx, search)
 

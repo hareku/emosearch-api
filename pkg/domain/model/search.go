@@ -11,6 +11,7 @@ type Search struct {
 	UserID             UserID
 	Title              string
 	Query              string
+	LastSearchUpdateAt time.Time
 	NextSearchUpdateAt time.Time
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
