@@ -7,12 +7,12 @@ type SearchID string
 
 // Search is the structure of a searching configuration.
 type Search struct {
-	SearchID           SearchID
-	UserID             UserID
-	Title              string
-	Query              string
-	LastSearchUpdateAt time.Time
-	NextSearchUpdateAt time.Time
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	SearchID            SearchID
+	UserID              UserID
+	Title               string
+	Query               string
+	LastSearchUpdatedAt *time.Time
+	NextSearchUpdateAt  time.Time
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
 }

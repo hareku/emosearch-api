@@ -131,7 +131,7 @@ func (r *dynamoDBSearchRepository) Update(ctx context.Context, search *model.Sea
 	err := r.dynamoDB.Update("PK", fmt.Sprintf("USER#%s", search.UserID)).
 		Range("SK", fmt.Sprintf("SEARCH#%s", search.SearchID)).
 		Set("Query", search.Query).
-		Set("LastSearchUpdateAt", search.LastSearchUpdateAt).
+		Set("LastSearchUpdatedAt", search.LastSearchUpdatedAt).
 		Set("NextSearchUpdateAt", search.NextSearchUpdateAt).
 		RunWithContext(ctx)
 

@@ -131,12 +131,13 @@ func (u *searchUsecase) Create(ctx context.Context, input *SearchUsecaseCreateIn
 	}
 
 	search := &model.Search{
-		UserID:             userID,
-		Title:              "",
-		Query:              input.Query,
-		NextSearchUpdateAt: time.Now().AddDate(-1, 0, 0),
-		CreatedAt:          time.Now(),
-		UpdatedAt:          time.Now(),
+		UserID:              userID,
+		Title:               "",
+		Query:               input.Query,
+		LastSearchUpdatedAt: nil,
+		NextSearchUpdateAt:  time.Now().AddDate(-1, 0, 0),
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
 	}
 
 	err = u.searchRepository.Create(ctx, search)
@@ -148,7 +149,8 @@ func (u *searchUsecase) Create(ctx context.Context, input *SearchUsecaseCreateIn
 }
 
 func (u *searchUsecase) UpdateNextUpdateAt(ctx context.Context, search *model.Search) error {
-	search.LastSearchUpdateAt = time.Now()
+	now := time.Now()
+	search.LastSearchUpdatedAt = &now
 	search.NextSearchUpdateAt = time.Now().Add(30 * time.Minute)
 	err := u.searchRepository.Update(ctx, search)
 
