@@ -53,6 +53,10 @@ Resources:
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref GoogleServiceAccountKey
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref TwitterConsumerKey
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref TwitterConsumerSecret
         - DynamoDBCrudPolicy:
             TableName: !Ref DynamoDBTable
 
@@ -87,6 +91,10 @@ Resources:
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref GoogleServiceAccountKey
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref TwitterConsumerKey
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref TwitterConsumerSecret
         - DynamoDBCrudPolicy:
             TableName: !Ref DynamoDBTable
   CollectTweetsFunction:
@@ -100,6 +108,10 @@ Resources:
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref GoogleServiceAccountKey
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref TwitterConsumerKey
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref TwitterConsumerSecret
         - DynamoDBCrudPolicy:
             TableName: !Ref DynamoDBTable
 
