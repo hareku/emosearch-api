@@ -6,6 +6,7 @@
 - `aws dynamodb list-tables --endpoint-url http://localhost:8000`
 - `sam local start-api --port 9000 --env-vars config/sam-dev-env.json --docker-network emosearch-api_default`
 - `sam local invoke "EmosearchBatchSearchFunction" --env-vars config/sam-dev-env.json --docker-network emosearch-api_default`
+- `sam deploy --tags "Project=EmoSearchAPI"`
 
 This is a sample template for emosearch-api - Below is a brief explanation of what we have generated for you:
 
