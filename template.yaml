@@ -73,7 +73,7 @@ Resources:
           Properties:
             Description: Schedule to run the update searches state machine
             Enabled: True
-            Schedule: "rate(10 minutes)"
+            Schedule: "rate(5 minutes)"
       Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
         - LambdaInvokePolicy:
             FunctionName: !Ref ListSearchesToUpdateFunction

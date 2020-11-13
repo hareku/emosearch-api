@@ -10,7 +10,7 @@
         "CollectTweetsIterator": {
             "Type": "Map",
             "ItemsPath": "$.events",
-            "MaxConcurrency": 10,
+            "MaxConcurrency": 100,
             "Iterator": {
               "StartAt": "CollectTweets",
               "States": {

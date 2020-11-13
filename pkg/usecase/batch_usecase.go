@@ -53,15 +53,16 @@ func (u *batchUsecase) CollectTweets(ctx context.Context, searchID model.SearchI
 		return fmt.Errorf("collect tweets preparation error: %w", err)
 	}
 
+	err = u.searchUsecase.UpdateNextUpdateAt(ctx, search)
+	if err != nil {
+		return fmt.Errorf("failed to save next search update at: %w", err)
+	}
+
 	err = u.runCollection(ctx, search, input)
 	if err != nil {
 		return fmt.Errorf("failed to collect tweets: %w", err)
 	}
 
-	err = u.searchUsecase.UpdateNextUpdateAt(ctx, search)
-	if err != nil {
-		return fmt.Errorf("failed to save next search update at: %w", err)
-	}
 	return nil
 }
 
