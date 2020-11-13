@@ -5,7 +5,13 @@
         "TWITTER_CONSUMER_KEY": "xxxxx",
         "TWITTER_CONSUMER_SECRET": "xxxxx"
     },
-    "EmosearchBatchSearchFunction": {
+    "ListSearchesToUpdateFunction": {
+        "GOOGLE_SERVICE_ACCOUNT_KEY": "xxxxx",
+        "AWS_ENDPOINT": "http://dynamodb:8000",
+        "TWITTER_CONSUMER_KEY": "xxxxx",
+        "TWITTER_CONSUMER_SECRET": "xxxxx"
+    },
+    "CollectTweetsFunction": {
         "GOOGLE_SERVICE_ACCOUNT_KEY": "xxxxx",
         "AWS_ENDPOINT": "http://dynamodb:8000",
         "TWITTER_CONSUMER_KEY": "xxxxx",
