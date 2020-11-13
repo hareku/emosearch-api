@@ -114,6 +114,7 @@ Resources:
             SecretArn: !Ref TwitterConsumerSecret
         - DynamoDBCrudPolicy:
             TableName: !Ref DynamoDBTable
+        - arn:aws:iam::aws:policy/ComprehendReadOnly
 
   GoogleServiceAccountKey:
     Type: AWS::SecretsManager::Secret
