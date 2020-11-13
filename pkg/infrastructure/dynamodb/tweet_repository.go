@@ -137,9 +137,5 @@ func (r *dynamoDBTweetRepository) LatestTweetID(ctx context.Context, searchID mo
 }
 
 func (r *dynamoDBTweetRepository) buildTweetSentimentIndexPK(ID model.SearchID, label sentiment.Label) string {
-	labelKey := label
-	if label == sentiment.LabelPositive || label == sentiment.LabelNegative {
-		labelKey = "POS_OR_NEG__" + labelKey
-	}
-	return fmt.Sprintf("SEARCH#%s#%s", ID, labelKey)
+	return fmt.Sprintf("SEARCH#%s#%s", ID, label)
 }
