@@ -207,5 +207,5 @@ func shouldDetectScore(tweet *twitter.Tweet) bool {
 		textLen -= len(hash.Tag)
 	}
 
-	return textLen >= 220
+	return textLen >= 160
 }
