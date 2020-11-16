@@ -48,7 +48,7 @@ func NewBatchUsecase(input *NewBatchUsecaseInput) BatchUsecase {
 }
 
 func (u *batchUsecase) CollectTweets(ctx context.Context, searchID model.SearchID, userID model.UserID) error {
-	search, input, err := u.prepareToCollectTweets(ctx, searchID, userID)
+	search, input, err := u.prepareSearch(ctx, searchID, userID)
 	if err != nil {
 		return fmt.Errorf("collect tweets preparation error: %w", err)
 	}
@@ -66,7 +66,7 @@ func (u *batchUsecase) CollectTweets(ctx context.Context, searchID model.SearchI
 	return nil
 }
 
-func (u *batchUsecase) prepareToCollectTweets(ctx context.Context, searchID model.SearchID, userID model.UserID) (*model.Search, *twitter.SearchInput, error) {
+func (u *batchUsecase) prepareSearch(ctx context.Context, searchID model.SearchID, userID model.UserID) (*model.Search, *twitter.SearchInput, error) {
 	search, err := u.searchUsecase.Find(ctx, searchID, userID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch search: %w", err)
