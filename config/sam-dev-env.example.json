@@ -1,5 +1,5 @@
 {
-    "EmosearchAPIFunction": {
+    "APIFunction": {
         "GOOGLE_SERVICE_ACCOUNT_KEY": "xxxxx",
         "AWS_ENDPOINT": "http://dynamodb:8000",
         "TWITTER_CONSUMER_KEY": "xxxxx",
