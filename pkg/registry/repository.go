@@ -18,13 +18,11 @@ func getDynamoTable() *dynamo.Table {
 			Region: aws.String("ap-northeast-1"),
 		}
 
-		region := os.Getenv("AWS_REGION")
-		if region != "" {
+		if region := os.Getenv("AWS_REGION"); region != "" {
 			awsConf.Region = aws.String(region)
 		}
 
-		endpoint := os.Getenv("AWS_ENDPOINT")
-		if endpoint != "" {
+		if endpoint := os.Getenv("AWS_ENDPOINT"); endpoint != "" {
 			awsConf.Endpoint = aws.String(endpoint)
 		}
 
