@@ -18,28 +18,6 @@ func NewComprehendDetector(client *comprehend.Comprehend) sentiment.Detector {
 	return &comprehendDetector{client}
 }
 
-func (d *comprehendDetector) Detect(ctx context.Context, text string) (*sentiment.DetectOutput, error) {
-	output, err := d.client.DetectSentimentWithContext(ctx, &comprehend.DetectSentimentInput{
-		LanguageCode: aws.String(comprehend.LanguageCodeJa),
-		Text:         aws.String(text),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("aws comprehend error: %w", err)
-	}
-
-	res := &sentiment.DetectOutput{
-		Score: sentiment.Score{
-			Mixed:    output.SentimentScore.Mixed,
-			Neutral:  output.SentimentScore.Neutral,
-			Negative: output.SentimentScore.Negative,
-			Positive: output.SentimentScore.Positive,
-		},
-		Label: determineLabel(output.Sentiment),
-	}
-
-	return res, nil
-}
-
 func (d *comprehendDetector) BatchDetect(ctx context.Context, textList []*string) ([]sentiment.DetectOutput, error) {
 	output, err := d.client.BatchDetectSentimentWithContext(ctx, &comprehend.BatchDetectSentimentInput{
 		LanguageCode: aws.String(comprehend.LanguageCodeJa),
@@ -51,12 +29,12 @@ func (d *comprehendDetector) BatchDetect(ctx context.Context, textList []*string
 
 	res := []sentiment.DetectOutput{}
 	for _, result := range output.ResultList {
+		neutral := *result.SentimentScore.Neutral + *result.SentimentScore.Mixed
 		res = append(res, sentiment.DetectOutput{
 			Score: sentiment.Score{
-				Mixed:    result.SentimentScore.Mixed,
-				Neutral:  result.SentimentScore.Neutral,
-				Negative: result.SentimentScore.Negative,
 				Positive: result.SentimentScore.Positive,
+				Negative: result.SentimentScore.Negative,
+				Neutral:  &neutral,
 			},
 			Label: determineLabel(result.Sentiment),
 		})
