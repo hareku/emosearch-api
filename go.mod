@@ -17,6 +17,5 @@ require (
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/google/uuid v1.1.2
 	github.com/guregu/dynamo v1.10.0
-	github.com/urfave/cli v1.22.1 // indirect
 	google.golang.org/api v0.34.0
 )
